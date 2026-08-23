@@ -1,0 +1,965 @@
+{
+  "status": "seed_prototype",
+  "items": [
+    {
+      "id": "D1-addition_1x1-0001",
+      "grade": 1,
+      "domain": "Number and Operations",
+      "skill": "addition_1x1",
+      "operation": "addition",
+      "pattern": "1x1",
+      "question": "3 + 4",
+      "answer": 7
+    },
+    {
+      "id": "D1-addition_1x1-0002",
+      "grade": 1,
+      "domain": "Number and Operations",
+      "skill": "addition_1x1",
+      "operation": "addition",
+      "pattern": "1x1",
+      "question": "6 + 2",
+      "answer": 8
+    },
+    {
+      "id": "D1-addition_1x1-0003",
+      "grade": 1,
+      "domain": "Number and Operations",
+      "skill": "addition_1x1",
+      "operation": "addition",
+      "pattern": "1x1",
+      "question": "5 + 1",
+      "answer": 6
+    },
+    {
+      "id": "D1-addition_1x1-0004",
+      "grade": 1,
+      "domain": "Number and Operations",
+      "skill": "addition_1x1",
+      "operation": "addition",
+      "pattern": "1x1",
+      "question": "7 + 2",
+      "answer": 9
+    },
+    {
+      "id": "D1-subtraction_1x1-0005",
+      "grade": 1,
+      "domain": "Number and Operations",
+      "skill": "subtraction_1x1",
+      "operation": "subtraction",
+      "pattern": "1x1",
+      "question": "8 \u2212 3",
+      "answer": 5
+    },
+    {
+      "id": "D1-subtraction_1x1-0006",
+      "grade": 1,
+      "domain": "Number and Operations",
+      "skill": "subtraction_1x1",
+      "operation": "subtraction",
+      "pattern": "1x1",
+      "question": "9 \u2212 4",
+      "answer": 5
+    },
+    {
+      "id": "D1-subtraction_1x1-0007",
+      "grade": 1,
+      "domain": "Number and Operations",
+      "skill": "subtraction_1x1",
+      "operation": "subtraction",
+      "pattern": "1x1",
+      "question": "7 \u2212 2",
+      "answer": 5
+    },
+    {
+      "id": "D1-subtraction_1x1-0008",
+      "grade": 1,
+      "domain": "Number and Operations",
+      "skill": "subtraction_1x1",
+      "operation": "subtraction",
+      "pattern": "1x1",
+      "question": "6 \u2212 1",
+      "answer": 5
+    },
+    {
+      "id": "D1-multiplication_1x1-0009",
+      "grade": 1,
+      "domain": "Number and Operations",
+      "skill": "multiplication_1x1",
+      "operation": "multiplication",
+      "pattern": "1x1",
+      "question": "2 \u00d7 3",
+      "answer": 6
+    },
+    {
+      "id": "D1-multiplication_1x1-0010",
+      "grade": 1,
+      "domain": "Number and Operations",
+      "skill": "multiplication_1x1",
+      "operation": "multiplication",
+      "pattern": "1x1",
+      "question": "4 \u00d7 2",
+      "answer": 8
+    },
+    {
+      "id": "D1-multiplication_1x1-0011",
+      "grade": 1,
+      "domain": "Number and Operations",
+      "skill": "multiplication_1x1",
+      "operation": "multiplication",
+      "pattern": "1x1",
+      "question": "3 \u00d7 3",
+      "answer": 9
+    },
+    {
+      "id": "D1-multiplication_1x1-0012",
+      "grade": 1,
+      "domain": "Number and Operations",
+      "skill": "multiplication_1x1",
+      "operation": "multiplication",
+      "pattern": "1x1",
+      "question": "5 \u00d7 2",
+      "answer": 10
+    },
+    {
+      "id": "D1-division_1x1-0013",
+      "grade": 1,
+      "domain": "Number and Operations",
+      "skill": "division_1x1",
+      "operation": "division",
+      "pattern": "1x1",
+      "question": "6 \u00f7 2",
+      "answer": 3
+    },
+    {
+      "id": "D1-division_1x1-0014",
+      "grade": 1,
+      "domain": "Number and Operations",
+      "skill": "division_1x1",
+      "operation": "division",
+      "pattern": "1x1",
+      "question": "8 \u00f7 2",
+      "answer": 4
+    },
+    {
+      "id": "D1-division_1x1-0015",
+      "grade": 1,
+      "domain": "Number and Operations",
+      "skill": "division_1x1",
+      "operation": "division",
+      "pattern": "1x1",
+      "question": "9 \u00f7 3",
+      "answer": 3
+    },
+    {
+      "id": "D1-division_1x1-0016",
+      "grade": 1,
+      "domain": "Number and Operations",
+      "skill": "division_1x1",
+      "operation": "division",
+      "pattern": "1x1",
+      "question": "10 \u00f7 2",
+      "answer": 5
+    },
+    {
+      "id": "D2-addition_2x1-0017",
+      "grade": 2,
+      "domain": "Number and Operations",
+      "skill": "addition_2x1",
+      "operation": "addition",
+      "pattern": "2x1",
+      "question": "12 + 3",
+      "answer": 15
+    },
+    {
+      "id": "D2-addition_2x1-0018",
+      "grade": 2,
+      "domain": "Number and Operations",
+      "skill": "addition_2x1",
+      "operation": "addition",
+      "pattern": "2x1",
+      "question": "24 + 5",
+      "answer": 29
+    },
+    {
+      "id": "D2-addition_2x1-0019",
+      "grade": 2,
+      "domain": "Number and Operations",
+      "skill": "addition_2x1",
+      "operation": "addition",
+      "pattern": "2x1",
+      "question": "31 + 7",
+      "answer": 38
+    },
+    {
+      "id": "D2-addition_2x1-0020",
+      "grade": 2,
+      "domain": "Number and Operations",
+      "skill": "addition_2x1",
+      "operation": "addition",
+      "pattern": "2x1",
+      "question": "45 + 2",
+      "answer": 47
+    },
+    {
+      "id": "D2-subtraction_2x1-0021",
+      "grade": 2,
+      "domain": "Number and Operations",
+      "skill": "subtraction_2x1",
+      "operation": "subtraction",
+      "pattern": "2x1",
+      "question": "15 \u2212 3",
+      "answer": 12
+    },
+    {
+      "id": "D2-subtraction_2x1-0022",
+      "grade": 2,
+      "domain": "Number and Operations",
+      "skill": "subtraction_2x1",
+      "operation": "subtraction",
+      "pattern": "2x1",
+      "question": "28 \u2212 6",
+      "answer": 22
+    },
+    {
+      "id": "D2-subtraction_2x1-0023",
+      "grade": 2,
+      "domain": "Number and Operations",
+      "skill": "subtraction_2x1",
+      "operation": "subtraction",
+      "pattern": "2x1",
+      "question": "41 \u2212 5",
+      "answer": 36
+    },
+    {
+      "id": "D2-subtraction_2x1-0024",
+      "grade": 2,
+      "domain": "Number and Operations",
+      "skill": "subtraction_2x1",
+      "operation": "subtraction",
+      "pattern": "2x1",
+      "question": "57 \u2212 4",
+      "answer": 53
+    },
+    {
+      "id": "D2-multiplication_2x1-0025",
+      "grade": 2,
+      "domain": "Number and Operations",
+      "skill": "multiplication_2x1",
+      "operation": "multiplication",
+      "pattern": "2x1",
+      "question": "12 \u00d7 3",
+      "answer": 36
+    },
+    {
+      "id": "D2-multiplication_2x1-0026",
+      "grade": 2,
+      "domain": "Number and Operations",
+      "skill": "multiplication_2x1",
+      "operation": "multiplication",
+      "pattern": "2x1",
+      "question": "21 \u00d7 2",
+      "answer": 42
+    },
+    {
+      "id": "D2-multiplication_2x1-0027",
+      "grade": 2,
+      "domain": "Number and Operations",
+      "skill": "multiplication_2x1",
+      "operation": "multiplication",
+      "pattern": "2x1",
+      "question": "14 \u00d7 4",
+      "answer": 56
+    },
+    {
+      "id": "D2-multiplication_2x1-0028",
+      "grade": 2,
+      "domain": "Number and Operations",
+      "skill": "multiplication_2x1",
+      "operation": "multiplication",
+      "pattern": "2x1",
+      "question": "32 \u00d7 2",
+      "answer": 64
+    },
+    {
+      "id": "D2-division_2x1-0029",
+      "grade": 2,
+      "domain": "Number and Operations",
+      "skill": "division_2x1",
+      "operation": "division",
+      "pattern": "2x1",
+      "question": "24 \u00f7 3",
+      "answer": 8
+    },
+    {
+      "id": "D2-division_2x1-0030",
+      "grade": 2,
+      "domain": "Number and Operations",
+      "skill": "division_2x1",
+      "operation": "division",
+      "pattern": "2x1",
+      "question": "36 \u00f7 4",
+      "answer": 9
+    },
+    {
+      "id": "D2-division_2x1-0031",
+      "grade": 2,
+      "domain": "Number and Operations",
+      "skill": "division_2x1",
+      "operation": "division",
+      "pattern": "2x1",
+      "question": "42 \u00f7 6",
+      "answer": 7
+    },
+    {
+      "id": "D2-division_2x1-0032",
+      "grade": 2,
+      "domain": "Number and Operations",
+      "skill": "division_2x1",
+      "operation": "division",
+      "pattern": "2x1",
+      "question": "56 \u00f7 7",
+      "answer": 8
+    },
+    {
+      "id": "D2-addition_2x2-0033",
+      "grade": 2,
+      "domain": "Number and Operations",
+      "skill": "addition_2x2",
+      "operation": "addition",
+      "pattern": "2x2",
+      "question": "12 + 23",
+      "answer": 35
+    },
+    {
+      "id": "D2-addition_2x2-0034",
+      "grade": 2,
+      "domain": "Number and Operations",
+      "skill": "addition_2x2",
+      "operation": "addition",
+      "pattern": "2x2",
+      "question": "24 + 15",
+      "answer": 39
+    },
+    {
+      "id": "D2-addition_2x2-0035",
+      "grade": 2,
+      "domain": "Number and Operations",
+      "skill": "addition_2x2",
+      "operation": "addition",
+      "pattern": "2x2",
+      "question": "31 + 27",
+      "answer": 58
+    },
+    {
+      "id": "D2-addition_2x2-0036",
+      "grade": 2,
+      "domain": "Number and Operations",
+      "skill": "addition_2x2",
+      "operation": "addition",
+      "pattern": "2x2",
+      "question": "45 + 12",
+      "answer": 57
+    },
+    {
+      "id": "D2-subtraction_2x2-0037",
+      "grade": 2,
+      "domain": "Number and Operations",
+      "skill": "subtraction_2x2",
+      "operation": "subtraction",
+      "pattern": "2x2",
+      "question": "35 \u2212 12",
+      "answer": 23
+    },
+    {
+      "id": "D2-subtraction_2x2-0038",
+      "grade": 2,
+      "domain": "Number and Operations",
+      "skill": "subtraction_2x2",
+      "operation": "subtraction",
+      "pattern": "2x2",
+      "question": "49 \u2212 15",
+      "answer": 34
+    },
+    {
+      "id": "D2-subtraction_2x2-0039",
+      "grade": 2,
+      "domain": "Number and Operations",
+      "skill": "subtraction_2x2",
+      "operation": "subtraction",
+      "pattern": "2x2",
+      "question": "58 \u2212 27",
+      "answer": 31
+    },
+    {
+      "id": "D2-subtraction_2x2-0040",
+      "grade": 2,
+      "domain": "Number and Operations",
+      "skill": "subtraction_2x2",
+      "operation": "subtraction",
+      "pattern": "2x2",
+      "question": "67 \u2212 21",
+      "answer": 46
+    },
+    {
+      "id": "D2-multiplication_2x2-0041",
+      "grade": 2,
+      "domain": "Number and Operations",
+      "skill": "multiplication_2x2",
+      "operation": "multiplication",
+      "pattern": "2x2",
+      "question": "12 \u00d7 11",
+      "answer": 132
+    },
+    {
+      "id": "D2-multiplication_2x2-0042",
+      "grade": 2,
+      "domain": "Number and Operations",
+      "skill": "multiplication_2x2",
+      "operation": "multiplication",
+      "pattern": "2x2",
+      "question": "14 \u00d7 12",
+      "answer": 168
+    },
+    {
+      "id": "D2-multiplication_2x2-0043",
+      "grade": 2,
+      "domain": "Number and Operations",
+      "skill": "multiplication_2x2",
+      "operation": "multiplication",
+      "pattern": "2x2",
+      "question": "21 \u00d7 10",
+      "answer": 210
+    },
+    {
+      "id": "D2-multiplication_2x2-0044",
+      "grade": 2,
+      "domain": "Number and Operations",
+      "skill": "multiplication_2x2",
+      "operation": "multiplication",
+      "pattern": "2x2",
+      "question": "22 \u00d7 11",
+      "answer": 242
+    },
+    {
+      "id": "D2-division_2x2-0045",
+      "grade": 2,
+      "domain": "Number and Operations",
+      "skill": "division_2x2",
+      "operation": "division",
+      "pattern": "2x2",
+      "question": "24 \u00f7 12",
+      "answer": 2
+    },
+    {
+      "id": "D2-division_2x2-0046",
+      "grade": 2,
+      "domain": "Number and Operations",
+      "skill": "division_2x2",
+      "operation": "division",
+      "pattern": "2x2",
+      "question": "36 \u00f7 12",
+      "answer": 3
+    },
+    {
+      "id": "D2-division_2x2-0047",
+      "grade": 2,
+      "domain": "Number and Operations",
+      "skill": "division_2x2",
+      "operation": "division",
+      "pattern": "2x2",
+      "question": "48 \u00f7 12",
+      "answer": 4
+    },
+    {
+      "id": "D2-division_2x2-0048",
+      "grade": 2,
+      "domain": "Number and Operations",
+      "skill": "division_2x2",
+      "operation": "division",
+      "pattern": "2x2",
+      "question": "63 \u00f7 21",
+      "answer": 3
+    },
+    {
+      "id": "D3-addition_3x1-0049",
+      "grade": 3,
+      "domain": "Number and Operations",
+      "skill": "addition_3x1",
+      "operation": "addition",
+      "pattern": "3x1",
+      "question": "123 + 4",
+      "answer": 127
+    },
+    {
+      "id": "D3-addition_3x1-0050",
+      "grade": 3,
+      "domain": "Number and Operations",
+      "skill": "addition_3x1",
+      "operation": "addition",
+      "pattern": "3x1",
+      "question": "245 + 3",
+      "answer": 248
+    },
+    {
+      "id": "D3-addition_3x1-0051",
+      "grade": 3,
+      "domain": "Number and Operations",
+      "skill": "addition_3x1",
+      "operation": "addition",
+      "pattern": "3x1",
+      "question": "316 + 2",
+      "answer": 318
+    },
+    {
+      "id": "D3-addition_3x1-0052",
+      "grade": 3,
+      "domain": "Number and Operations",
+      "skill": "addition_3x1",
+      "operation": "addition",
+      "pattern": "3x1",
+      "question": "421 + 7",
+      "answer": 428
+    },
+    {
+      "id": "D3-subtraction_3x1-0053",
+      "grade": 3,
+      "domain": "Number and Operations",
+      "skill": "subtraction_3x1",
+      "operation": "subtraction",
+      "pattern": "3x1",
+      "question": "128 \u2212 4",
+      "answer": 124
+    },
+    {
+      "id": "D3-subtraction_3x1-0054",
+      "grade": 3,
+      "domain": "Number and Operations",
+      "skill": "subtraction_3x1",
+      "operation": "subtraction",
+      "pattern": "3x1",
+      "question": "245 \u2212 3",
+      "answer": 242
+    },
+    {
+      "id": "D3-subtraction_3x1-0055",
+      "grade": 3,
+      "domain": "Number and Operations",
+      "skill": "subtraction_3x1",
+      "operation": "subtraction",
+      "pattern": "3x1",
+      "question": "316 \u2212 2",
+      "answer": 314
+    },
+    {
+      "id": "D3-subtraction_3x1-0056",
+      "grade": 3,
+      "domain": "Number and Operations",
+      "skill": "subtraction_3x1",
+      "operation": "subtraction",
+      "pattern": "3x1",
+      "question": "421 \u2212 7",
+      "answer": 414
+    },
+    {
+      "id": "D3-multiplication_3x1-0057",
+      "grade": 3,
+      "domain": "Number and Operations",
+      "skill": "multiplication_3x1",
+      "operation": "multiplication",
+      "pattern": "3x1",
+      "question": "123 \u00d7 2",
+      "answer": 246
+    },
+    {
+      "id": "D3-multiplication_3x1-0058",
+      "grade": 3,
+      "domain": "Number and Operations",
+      "skill": "multiplication_3x1",
+      "operation": "multiplication",
+      "pattern": "3x1",
+      "question": "214 \u00d7 3",
+      "answer": 642
+    },
+    {
+      "id": "D3-multiplication_3x1-0059",
+      "grade": 3,
+      "domain": "Number and Operations",
+      "skill": "multiplication_3x1",
+      "operation": "multiplication",
+      "pattern": "3x1",
+      "question": "105 \u00d7 4",
+      "answer": 420
+    },
+    {
+      "id": "D3-multiplication_3x1-0060",
+      "grade": 3,
+      "domain": "Number and Operations",
+      "skill": "multiplication_3x1",
+      "operation": "multiplication",
+      "pattern": "3x1",
+      "question": "321 \u00d7 2",
+      "answer": 642
+    },
+    {
+      "id": "D3-division_3x1-0061",
+      "grade": 3,
+      "domain": "Number and Operations",
+      "skill": "division_3x1",
+      "operation": "division",
+      "pattern": "3x1",
+      "question": "126 \u00f7 3",
+      "answer": 42
+    },
+    {
+      "id": "D3-division_3x1-0062",
+      "grade": 3,
+      "domain": "Number and Operations",
+      "skill": "division_3x1",
+      "operation": "division",
+      "pattern": "3x1",
+      "question": "144 \u00f7 4",
+      "answer": 36
+    },
+    {
+      "id": "D3-division_3x1-0063",
+      "grade": 3,
+      "domain": "Number and Operations",
+      "skill": "division_3x1",
+      "operation": "division",
+      "pattern": "3x1",
+      "question": "225 \u00f7 5",
+      "answer": 45
+    },
+    {
+      "id": "D3-division_3x1-0064",
+      "grade": 3,
+      "domain": "Number and Operations",
+      "skill": "division_3x1",
+      "operation": "division",
+      "pattern": "3x1",
+      "question": "312 \u00f7 6",
+      "answer": 52
+    },
+    {
+      "id": "D3-addition_3x2-0065",
+      "grade": 3,
+      "domain": "Number and Operations",
+      "skill": "addition_3x2",
+      "operation": "addition",
+      "pattern": "3x2",
+      "question": "123 + 12",
+      "answer": 135
+    },
+    {
+      "id": "D3-addition_3x2-0066",
+      "grade": 3,
+      "domain": "Number and Operations",
+      "skill": "addition_3x2",
+      "operation": "addition",
+      "pattern": "3x2",
+      "question": "245 + 31",
+      "answer": 276
+    },
+    {
+      "id": "D3-addition_3x2-0067",
+      "grade": 3,
+      "domain": "Number and Operations",
+      "skill": "addition_3x2",
+      "operation": "addition",
+      "pattern": "3x2",
+      "question": "316 + 22",
+      "answer": 338
+    },
+    {
+      "id": "D3-addition_3x2-0068",
+      "grade": 3,
+      "domain": "Number and Operations",
+      "skill": "addition_3x2",
+      "operation": "addition",
+      "pattern": "3x2",
+      "question": "421 + 15",
+      "answer": 436
+    },
+    {
+      "id": "D3-subtraction_3x2-0069",
+      "grade": 3,
+      "domain": "Number and Operations",
+      "skill": "subtraction_3x2",
+      "operation": "subtraction",
+      "pattern": "3x2",
+      "question": "128 \u2212 12",
+      "answer": 116
+    },
+    {
+      "id": "D3-subtraction_3x2-0070",
+      "grade": 3,
+      "domain": "Number and Operations",
+      "skill": "subtraction_3x2",
+      "operation": "subtraction",
+      "pattern": "3x2",
+      "question": "245 \u2212 31",
+      "answer": 214
+    },
+    {
+      "id": "D3-subtraction_3x2-0071",
+      "grade": 3,
+      "domain": "Number and Operations",
+      "skill": "subtraction_3x2",
+      "operation": "subtraction",
+      "pattern": "3x2",
+      "question": "316 \u2212 22",
+      "answer": 294
+    },
+    {
+      "id": "D3-subtraction_3x2-0072",
+      "grade": 3,
+      "domain": "Number and Operations",
+      "skill": "subtraction_3x2",
+      "operation": "subtraction",
+      "pattern": "3x2",
+      "question": "421 \u2212 15",
+      "answer": 406
+    },
+    {
+      "id": "D3-multiplication_3x2-0073",
+      "grade": 3,
+      "domain": "Number and Operations",
+      "skill": "multiplication_3x2",
+      "operation": "multiplication",
+      "pattern": "3x2",
+      "question": "123 \u00d7 12",
+      "answer": 1476
+    },
+    {
+      "id": "D3-multiplication_3x2-0074",
+      "grade": 3,
+      "domain": "Number and Operations",
+      "skill": "multiplication_3x2",
+      "operation": "multiplication",
+      "pattern": "3x2",
+      "question": "105 \u00d7 11",
+      "answer": 1155
+    },
+    {
+      "id": "D3-multiplication_3x2-0075",
+      "grade": 3,
+      "domain": "Number and Operations",
+      "skill": "multiplication_3x2",
+      "operation": "multiplication",
+      "pattern": "3x2",
+      "question": "214 \u00d7 12",
+      "answer": 2568
+    },
+    {
+      "id": "D3-multiplication_3x2-0076",
+      "grade": 3,
+      "domain": "Number and Operations",
+      "skill": "multiplication_3x2",
+      "operation": "multiplication",
+      "pattern": "3x2",
+      "question": "321 \u00d7 10",
+      "answer": 3210
+    },
+    {
+      "id": "D3-division_3x2-0077",
+      "grade": 3,
+      "domain": "Number and Operations",
+      "skill": "division_3x2",
+      "operation": "division",
+      "pattern": "3x2",
+      "question": "144 \u00f7 12",
+      "answer": 12
+    },
+    {
+      "id": "D3-division_3x2-0078",
+      "grade": 3,
+      "domain": "Number and Operations",
+      "skill": "division_3x2",
+      "operation": "division",
+      "pattern": "3x2",
+      "question": "264 \u00f7 12",
+      "answer": 22
+    },
+    {
+      "id": "D3-division_3x2-0079",
+      "grade": 3,
+      "domain": "Number and Operations",
+      "skill": "division_3x2",
+      "operation": "division",
+      "pattern": "3x2",
+      "question": "315 \u00f7 15",
+      "answer": 21
+    },
+    {
+      "id": "D3-division_3x2-0080",
+      "grade": 3,
+      "domain": "Number and Operations",
+      "skill": "division_3x2",
+      "operation": "division",
+      "pattern": "3x2",
+      "question": "432 \u00f7 16",
+      "answer": 27
+    },
+    {
+      "id": "D3-addition_3x3-0081",
+      "grade": 3,
+      "domain": "Number and Operations",
+      "skill": "addition_3x3",
+      "operation": "addition",
+      "pattern": "3x3",
+      "question": "123 + 234",
+      "answer": 357
+    },
+    {
+      "id": "D3-addition_3x3-0082",
+      "grade": 3,
+      "domain": "Number and Operations",
+      "skill": "addition_3x3",
+      "operation": "addition",
+      "pattern": "3x3",
+      "question": "245 + 321",
+      "answer": 566
+    },
+    {
+      "id": "D3-addition_3x3-0083",
+      "grade": 3,
+      "domain": "Number and Operations",
+      "skill": "addition_3x3",
+      "operation": "addition",
+      "pattern": "3x3",
+      "question": "316 + 222",
+      "answer": 538
+    },
+    {
+      "id": "D3-addition_3x3-0084",
+      "grade": 3,
+      "domain": "Number and Operations",
+      "skill": "addition_3x3",
+      "operation": "addition",
+      "pattern": "3x3",
+      "question": "421 + 115",
+      "answer": 536
+    },
+    {
+      "id": "D3-subtraction_3x3-0085",
+      "grade": 3,
+      "domain": "Number and Operations",
+      "skill": "subtraction_3x3",
+      "operation": "subtraction",
+      "pattern": "3x3",
+      "question": "357 \u2212 123",
+      "answer": 234
+    },
+    {
+      "id": "D3-subtraction_3x3-0086",
+      "grade": 3,
+      "domain": "Number and Operations",
+      "skill": "subtraction_3x3",
+      "operation": "subtraction",
+      "pattern": "3x3",
+      "question": "566 \u2212 321",
+      "answer": 245
+    },
+    {
+      "id": "D3-subtraction_3x3-0087",
+      "grade": 3,
+      "domain": "Number and Operations",
+      "skill": "subtraction_3x3",
+      "operation": "subtraction",
+      "pattern": "3x3",
+      "question": "538 \u2212 222",
+      "answer": 316
+    },
+    {
+      "id": "D3-subtraction_3x3-0088",
+      "grade": 3,
+      "domain": "Number and Operations",
+      "skill": "subtraction_3x3",
+      "operation": "subtraction",
+      "pattern": "3x3",
+      "question": "536 \u2212 115",
+      "answer": 421
+    },
+    {
+      "id": "D3-multiplication_3x3-0089",
+      "grade": 3,
+      "domain": "Number and Operations",
+      "skill": "multiplication_3x3",
+      "operation": "multiplication",
+      "pattern": "3x3",
+      "question": "123 \u00d7 123",
+      "answer": 15129
+    },
+    {
+      "id": "D3-multiplication_3x3-0090",
+      "grade": 3,
+      "domain": "Number and Operations",
+      "skill": "multiplication_3x3",
+      "operation": "multiplication",
+      "pattern": "3x3",
+      "question": "101 \u00d7 111",
+      "answer": 11211
+    },
+    {
+      "id": "D3-multiplication_3x3-0091",
+      "grade": 3,
+      "domain": "Number and Operations",
+      "skill": "multiplication_3x3",
+      "operation": "multiplication",
+      "pattern": "3x3",
+      "question": "120 \u00d7 102",
+      "answer": 12240
+    },
+    {
+      "id": "D3-multiplication_3x3-0092",
+      "grade": 3,
+      "domain": "Number and Operations",
+      "skill": "multiplication_3x3",
+      "operation": "multiplication",
+      "pattern": "3x3",
+      "question": "111 \u00d7 111",
+      "answer": 12321
+    },
+    {
+      "id": "D3-division_3x3-0093",
+      "grade": 3,
+      "domain": "Number and Operations",
+      "skill": "division_3x3",
+      "operation": "division",
+      "pattern": "3x3",
+      "question": "144 \u00f7 12",
+      "answer": 12
+    },
+    {
+      "id": "D3-division_3x3-0094",
+      "grade": 3,
+      "domain": "Number and Operations",
+      "skill": "division_3x3",
+      "operation": "division",
+      "pattern": "3x3",
+      "question": "216 \u00f7 12",
+      "answer": 18
+    },
+    {
+      "id": "D3-division_3x3-0095",
+      "grade": 3,
+      "domain": "Number and Operations",
+      "skill": "division_3x3",
+      "operation": "division",
+      "pattern": "3x3",
+      "question": "360 \u00f7 12",
+      "answer": 30
+    },
+    {
+      "id": "D3-division_3x3-0096",
+      "grade": 3,
+      "domain": "Number and Operations",
+      "skill": "division_3x3",
+      "operation": "division",
+      "pattern": "3x3",
+      "question": "441 \u00f7 21",
+      "answer": 21
+    }
+  ]
+}
