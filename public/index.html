@@ -22,7 +22,7 @@
 </style>
 <link rel="manifest" href="/manifest.webmanifest"><script>if("serviceWorker" in navigator)navigator.serviceWorker.register("/sw.js");</script><script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Caveat:wght@700&family=Nunito:wght@600;800&display=swap" rel="stylesheet"></head>
 <body><header class="top">🤖 MathBuddy <span style="font-weight:400;font-size:12px;opacity:.75;margin-left:6px">Project KABULIG · Developed by Sir Dyon</span><span style="float:right;font-size:12px;font-weight:400;opacity:.7">SDO Romblon</span></header><main class="main">
-<div class="card"><div class="row"><div><label for="name" style="display:block;font-weight:900;font-size:12px;margin-bottom:5px;color:#425466">Name of the Student</label><input id="name" placeholder="Learner name"></div><div><label for="grade" style="display:block;font-weight:900;font-size:12px;margin-bottom:5px;color:#425466">Grade Level</label><select id="grade"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select></div></div><button class="dark" id="register" style="margin-top:9px;width:100%">Start / Continue Learning</button><p style="font-size:11px;color:#687583;margin:6px 0 0">Type the exact name you used before to resume your progress on any device — even a new one.</p><div id="reg"></div></div>
+<div class="card"><div class="row"><div><label for="name" style="display:block;font-weight:900;font-size:12px;margin-bottom:5px;color:#425466">Name of the Student</label><input id="name" placeholder="Full name (e.g., Juan Dela Cruz)"></div><div><label for="grade" style="display:block;font-weight:900;font-size:12px;margin-bottom:5px;color:#425466">Grade Level</label><select id="grade"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select></div></div><div class="row" style="margin-top:6px"><div><label for="district" style="display:block;font-weight:900;font-size:12px;margin-bottom:5px;color:#425466">District</label><select id="district"><option value="">-- Select District --</option><option>Alcantara</option><option>Banton</option><option>Cajidiocan</option><option>Calatrava</option><option>Concepcion</option><option>Corcuera</option><option>Ferrol</option><option>Looc</option><option>Magdiwang</option><option>Odiongan</option><option>Romblon</option><option>San Agustin</option><option>Sta. Fe</option></select></div><div><label for="section" style="display:block;font-weight:900;font-size:12px;margin-bottom:5px;color:#425466">Section</label><input id="section" placeholder="e.g., Rizal, Mabini"></div></div><button class="dark" id="register" style="margin-top:9px;width:100%">Start / Continue Learning</button><p style="font-size:11px;color:#687583;margin:6px 0 0">Type the exact name you used before to resume your progress on any device — even a new one.</p><div id="reg"></div></div>
 <div class="grid"><section><div class="card robot">
   <div id="bot" class="bot idle" aria-label="MathBuddy animated tutor">
     <img src="/mathbuddy-mascot.png" alt="MathBuddy" style="width:190px;height:auto;pointer-events:none">
@@ -382,13 +382,14 @@ function extractNumber(t){
 }
 function micToAnswer(inputSel,statusSel){
  const SR2=window.SpeechRecognition||window.webkitSpeechRecognition;
- if(!SR2){if(statusSel)$(statusSel).textContent="Speech recognition is not supported in this browser. Type your answer instead.";return}
- const rec=new SR2();rec.lang=$("#voiceLang")?.value||"en-PH";rec.interimResults=false;
- rec.onstart=()=>{if(statusSel)$(statusSel).textContent="🎤 Listening..."};
- rec.onresult=e=>{const t=e.results[0][0].transcript;const val=extractNumber(t);$(inputSel).value=val;if(statusSel)$(statusSel).textContent=(val!==t?`Heard: "${t}" → ${val}`:`Heard: "${t}"`)};
- rec.onerror=()=>{if(statusSel)$(statusSel).textContent="Couldn't hear that clearly. Try again or type."};
- rec.onend=()=>{if(statusSel&&$(statusSel).textContent==="🎤 Listening...")$(statusSel).textContent="Ready"};
- rec.start();
+ if(!SR2){if(statusSel)$(statusSel).textContent="Speech recognition is not supported. Type your answer instead.";return}
+ const rec=new SR2();rec.lang=$("#voiceLang")?.value||"en-PH";rec.interimResults=false;rec.continuous=false;rec.maxAlternatives=3;
+ let gotResult=false;
+ rec.onstart=()=>{if(statusSel){$(statusSel).textContent="🎤 Listening... speak now!";$(statusSel).style.color="#28bd60"}};
+ rec.onresult=e=>{gotResult=true;const t=e.results[0][0].transcript;const val=extractNumber(t);$(inputSel).value=val;if(statusSel){$(statusSel).textContent=(val!==t?`Heard: "${t}" → ${val}`:`Heard: "${t}"`);$(statusSel).style.color="#687583"}};
+ rec.onerror=e=>{if(statusSel){$(statusSel).textContent=e.error==="not-allowed"?"Mic permission denied. Check browser settings.":"Couldn't hear that. Tap 🎤 and try again.";$(statusSel).style.color="#687583"}};
+ rec.onend=()=>{if(!gotResult&&statusSel&&$(statusSel).textContent.includes("Listening")){$(statusSel).textContent="No speech detected. Tap 🎤 and speak clearly.";$(statusSel).style.color="#687583"}};
+ try{rec.start()}catch(e){if(statusSel)$(statusSel).textContent="Could not start microphone. Try again."}
 }
 $("#hearQ").onclick=()=>speakText(toSpeechText(state.q?.q)+"?","#exVoiceStatus","🔊 Reading the problem...");
 $("#micAns").onclick=()=>micToAnswer("#answer","#exVoiceStatus");
@@ -540,14 +541,16 @@ async function newQ(){let q=await(await fetch("/api/question",{method:"POST",hea
  $("#title").textContent=q.isWordProblem?q.competencyLabel+" (Word Problem)":q.competencyLabel;$("#answer").value="";$("#feedback").textContent=""}
 function render(){let a=skill.attempts?skill.correct/skill.attempts:0;$("#mastery").textContent=Math.round(skill.mastery*100)+"%";$("#accuracy").textContent=Math.round(a*100)+"%";$("#level").textContent=`${skill.level}/${state.maxLevel}`;$("#fill").style.width=(skill.mastery*100)+"%";const item=Math.min(state.itemsThisLevel||1,15);const setNum=Math.min(3,Math.ceil(item/5));const itemInSet=item-((setNum-1)*5);const isWP=(item===5||item===10||item===15);$("#levelInfo").textContent=`Level ${skill.level||1}/${state.maxLevel} · Set ${setNum}/3 · Item ${itemInSet}/5${isWP?" 📝":""}`;}
 async function createNewLearner(name,grade){
- let r=await(await fetch("/api/learners",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name,grade})})).json();
+ const section=$("#section")?.value?.trim()||"";
+ const district=$("#district")?.value||"";
+ let r=await(await fetch("/api/learners",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name,grade,section,school:district})})).json();
  await selectLearner(r,true);
 }
 async function selectLearner(r,isNew){
  learner=r;saveLearner();
  state.grade=r.grade||state.grade;$("#grade").value=state.grade;
  skillByOp={addition:defaultSkill(),subtraction:defaultSkill(),multiplication:defaultSkill(),division:defaultSkill()};skill=skillByOp[state.operation];state.itemsThisLevel=1;state.prevLevel=1;
- $("#reg").textContent=`✅ ${isNew?"Welcome":"Welcome back"}, ${r.name} — ID: ${r.id}`;
+ $("#reg").textContent=`✅ ${isNew?"Welcome":"Welcome back"}, ${r.name}${r.school?" — "+r.school:""}${r.section?" · Section "+r.section:""} — ID: ${r.id}`;
  render();loadDash();teacherDashboard();
  curriculum().then(newQ);
  if(isNew){
@@ -577,7 +580,7 @@ $("#register").onclick=async()=>{
  await createNewLearner(name,grade);
 };
 $("#grade").onchange=()=>{state.grade=+$("#grade").value;state.competency=`addition_${state.grade===1?"1x1":state.grade===2?"2x1":"3x1"}`;state.operation="addition";skillByOp={addition:defaultSkill(),subtraction:defaultSkill(),multiplication:defaultSkill(),division:defaultSkill()};skill=skillByOp.addition;state.itemsThisLevel=1;state.prevLevel=1;state.maxLevel=6;curriculum().then(newQ);loadMap();render()};
-$("#check").onclick=async()=>{let ans=$("#answer").value.trim();if(!ans||!state.q)return;let correct=String(ans).toLowerCase()===String(state.q.a).toLowerCase();let payload={learnerId:learner?.id||"demo",competency:state.competency,question:state.q.q,expected:state.q.a,answer:ans,correct,difficulty:state.q.difficulty,skillState:skill};
+$("#check").onclick=async()=>{let ans=$("#answer").value.trim();if(!ans||!state.q)return;let correct=String(ans).toLowerCase()===String(state.q.a).toLowerCase();let payload={learnerId:learner?.id||"demo",learnerName:learner?.name||"",competency:state.competency,question:state.q.q,expected:state.q.a,answer:ans,correct,difficulty:state.q.difficulty,skillState:skill};
 let r=await queueOrSendAttempt(payload);skill=r.skillState||skill;skillByOp[state.operation]=skill;let newLevel=skill.level||1;let leveledUp=newLevel>state.prevLevel,leveledDown=newLevel<state.prevLevel;
 if(leveledUp||leveledDown){state.itemsThisLevel=1}else{state.itemsThisLevel=(state.itemsThisLevel||0)+1}
 const BATCH=15;const cap=state.maxLevel||6;let batchForced=false,mastered=false;
