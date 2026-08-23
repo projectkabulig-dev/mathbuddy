@@ -254,7 +254,7 @@ Return JSON only with keys: reply, emotion (happy|think|encourage|celebrate), ne
  const messages=[{role:"system",content:prompt},...chatMsgs,{role:"user",content:b.message||"Respond naturally to the learner."}];
  try{
   const r=await fetch(AI_URL,{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${AI_KEY}`},
-   body:JSON.stringify({model:AI_MODEL,temperature:.35,response_format:{type:"json_object"},messages})});
+   body:JSON.stringify({model:AI_MODEL,temperature:.35,max_tokens:150,response_format:{type:"json_object"},messages})});
   if(!r.ok){const err=await r.text();console.log("[MathBuddy] AI error:",r.status,err);throw Error(r.status)}
   const d=await r.json();console.log("[MathBuddy] AI responded OK");res.json(JSON.parse(d.choices?.[0]?.message?.content||"{}"));
  }catch(e){console.log("[MathBuddy] AI failed:",e.message);res.json(smartFallback())}
