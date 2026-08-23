@@ -1,0 +1,424 @@
+{
+  "metadata": {
+    "version": "V12-prototype",
+    "purpose": "Curriculum-aware routing layer",
+    "status": "Prototype mapping for system architecture; validate against the current official DepEd curriculum before instructional deployment."
+  },
+  "grade_1": {
+    "domains": {
+      "Number and Operations": [
+        {
+          "id": "G1-NO-01",
+          "skill": "count_and_read_numbers",
+          "label": "Counting and reading numbers"
+        },
+        {
+          "id": "G1-NO-02",
+          "skill": "addition_1x1",
+          "label": "Addition within 1-digit numbers",
+          "patterns": [
+            "1x1"
+          ]
+        },
+        {
+          "id": "G1-NO-03",
+          "skill": "subtraction_1x1",
+          "label": "Subtraction within 1-digit numbers",
+          "patterns": [
+            "1x1"
+          ]
+        },
+        {
+          "id": "G1-NO-04",
+          "skill": "multiplication_1x1",
+          "label": "Basic multiplication facts",
+          "patterns": [
+            "1x1"
+          ]
+        },
+        {
+          "id": "G1-NO-05",
+          "skill": "division_1x1",
+          "label": "Basic division facts",
+          "patterns": [
+            "1x1"
+          ]
+        }
+      ]
+    }
+  },
+  "grade_2": {
+    "domains": {
+      "Number and Operations": [
+        {
+          "id": "G2-NO-01",
+          "skill": "place_value_tens",
+          "label": "Place value through tens"
+        },
+        {
+          "id": "G2-NO-02",
+          "skill": "addition_2x1",
+          "label": "Addition: 2-digit by 1-digit",
+          "patterns": [
+            "2x1"
+          ]
+        },
+        {
+          "id": "G2-NO-03",
+          "skill": "subtraction_2x1",
+          "label": "Subtraction: 2-digit by 1-digit",
+          "patterns": [
+            "2x1"
+          ]
+        },
+        {
+          "id": "G2-NO-04",
+          "skill": "multiplication_2x1",
+          "label": "Multiplication: 2-digit by 1-digit",
+          "patterns": [
+            "2x1"
+          ]
+        },
+        {
+          "id": "G2-NO-05",
+          "skill": "division_2x1",
+          "label": "Division: 2-digit by 1-digit",
+          "patterns": [
+            "2x1"
+          ]
+        },
+        {
+          "id": "G2-NO-06",
+          "skill": "addition_2x2",
+          "label": "Addition: 2-digit by 2-digit",
+          "patterns": [
+            "2x2"
+          ]
+        },
+        {
+          "id": "G2-NO-07",
+          "skill": "subtraction_2x2",
+          "label": "Subtraction: 2-digit by 2-digit",
+          "patterns": [
+            "2x2"
+          ]
+        },
+        {
+          "id": "G2-NO-08",
+          "skill": "multiplication_2x2",
+          "label": "Multiplication: 2-digit by 2-digit",
+          "patterns": [
+            "2x2"
+          ]
+        },
+        {
+          "id": "G2-NO-09",
+          "skill": "division_2x2",
+          "label": "Division: 2-digit by 2-digit",
+          "patterns": [
+            "2x2"
+          ]
+        }
+      ]
+    }
+  },
+  "grade_3": {
+    "domains": {
+      "Number and Operations": [
+        {
+          "id": "G3-NO-01",
+          "skill": "place_value_hundreds",
+          "label": "Place value through hundreds"
+        },
+        {
+          "id": "G3-NO-02",
+          "skill": "addition_3x1",
+          "label": "Addition: 3-digit by 1-digit",
+          "patterns": [
+            "3x1"
+          ]
+        },
+        {
+          "id": "G3-NO-03",
+          "skill": "subtraction_3x1",
+          "label": "Subtraction: 3-digit by 1-digit",
+          "patterns": [
+            "3x1"
+          ]
+        },
+        {
+          "id": "G3-NO-04",
+          "skill": "multiplication_3x1",
+          "label": "Multiplication: 3-digit by 1-digit",
+          "patterns": [
+            "3x1"
+          ]
+        },
+        {
+          "id": "G3-NO-05",
+          "skill": "division_3x1",
+          "label": "Division: 3-digit by 1-digit",
+          "patterns": [
+            "3x1"
+          ]
+        },
+        {
+          "id": "G3-NO-06",
+          "skill": "addition_3x2",
+          "label": "Addition: 3-digit by 2-digit",
+          "patterns": [
+            "3x2"
+          ]
+        },
+        {
+          "id": "G3-NO-07",
+          "skill": "subtraction_3x2",
+          "label": "Subtraction: 3-digit by 2-digit",
+          "patterns": [
+            "3x2"
+          ]
+        },
+        {
+          "id": "G3-NO-08",
+          "skill": "multiplication_3x2",
+          "label": "Multiplication: 3-digit by 2-digit",
+          "patterns": [
+            "3x2"
+          ]
+        },
+        {
+          "id": "G3-NO-09",
+          "skill": "division_3x2",
+          "label": "Division: 3-digit by 2-digit",
+          "patterns": [
+            "3x2"
+          ]
+        },
+        {
+          "id": "G3-NO-10",
+          "skill": "addition_3x3",
+          "label": "Addition: 3-digit by 3-digit",
+          "patterns": [
+            "3x3"
+          ]
+        },
+        {
+          "id": "G3-NO-11",
+          "skill": "subtraction_3x3",
+          "label": "Subtraction: 3-digit by 3-digit",
+          "patterns": [
+            "3x3"
+          ]
+        },
+        {
+          "id": "G3-NO-12",
+          "skill": "multiplication_3x3",
+          "label": "Multiplication: 3-digit by 3-digit",
+          "patterns": [
+            "3x3"
+          ]
+        },
+        {
+          "id": "G3-NO-13",
+          "skill": "division_3x3",
+          "label": "Division: 3-digit by 3-digit",
+          "patterns": [
+            "3x3"
+          ]
+        }
+      ]
+    }
+  },
+  "grade_4": {
+    "domains": {
+      "Number and Operations": [
+        {
+          "id": "G4-NO-01",
+          "skill": "multi_digit_operations",
+          "label": "Multi-digit operations"
+        },
+        {
+          "id": "G4-NO-02",
+          "skill": "factors_multiples",
+          "label": "Factors and multiples"
+        }
+      ],
+      "Fractions": [
+        {
+          "id": "G4-F-01",
+          "skill": "equivalent_fractions",
+          "label": "Equivalent fractions"
+        },
+        {
+          "id": "G4-F-02",
+          "skill": "compare_fractions",
+          "label": "Compare fractions"
+        },
+        {
+          "id": "G4-F-03",
+          "skill": "fraction_operations",
+          "label": "Fraction operations"
+        }
+      ]
+    }
+  },
+  "grade_5": {
+    "domains": {
+      "Number and Operations": [
+        {
+          "id": "G5-NO-01",
+          "skill": "multi_digit_operations",
+          "label": "Multi-digit operations"
+        },
+        {
+          "id": "G5-NO-02",
+          "skill": "factors_multiples",
+          "label": "Factors and multiples"
+        },
+        {
+          "id": "G5-NO-03",
+          "skill": "patterns",
+          "label": "Number patterns"
+        }
+      ],
+      "Fractions and Decimals": [
+        {
+          "id": "G5-FD-01",
+          "skill": "fraction_operations",
+          "label": "Operations with fractions"
+        },
+        {
+          "id": "G5-FD-02",
+          "skill": "decimal_fractions",
+          "label": "Fractions and decimals"
+        }
+      ]
+    }
+  },
+  "grade_6": {
+    "domains": {
+      "Number and Operations": [
+        {
+          "id": "G6-NO-01",
+          "skill": "integers",
+          "label": "Integers"
+        },
+        {
+          "id": "G6-NO-02",
+          "skill": "ratio_intro",
+          "label": "Ratio"
+        },
+        {
+          "id": "G6-NO-03",
+          "skill": "operations",
+          "label": "Operations with numbers"
+        }
+      ],
+      "Fractions and Decimals": [
+        {
+          "id": "G6-FD-01",
+          "skill": "fraction_operations",
+          "label": "Fraction operations"
+        },
+        {
+          "id": "G6-FD-02",
+          "skill": "decimals",
+          "label": "Decimals"
+        }
+      ]
+    }
+  },
+  "grade_7": {
+    "domains": {
+      "Number": [
+        {
+          "id": "G7-N-01",
+          "skill": "rational_numbers",
+          "label": "Rational numbers"
+        },
+        {
+          "id": "G7-N-02",
+          "skill": "rational_operations",
+          "label": "Operations with rational numbers"
+        }
+      ],
+      "Algebra": [
+        {
+          "id": "G7-A-01",
+          "skill": "algebraic_expressions",
+          "label": "Algebraic expressions"
+        },
+        {
+          "id": "G7-A-02",
+          "skill": "linear_equations",
+          "label": "Linear equations"
+        }
+      ]
+    }
+  },
+  "grade_8": {
+    "domains": {
+      "Algebra": [
+        {
+          "id": "G8-A-01",
+          "skill": "exponents",
+          "label": "Exponents"
+        },
+        {
+          "id": "G8-A-02",
+          "skill": "linear_equations",
+          "label": "Linear equations"
+        },
+        {
+          "id": "G8-A-03",
+          "skill": "algebraic_reasoning",
+          "label": "Algebraic reasoning"
+        }
+      ]
+    }
+  },
+  "grade_9": {
+    "domains": {
+      "Algebra": [
+        {
+          "id": "G9-A-01",
+          "skill": "polynomials",
+          "label": "Polynomials"
+        },
+        {
+          "id": "G9-A-02",
+          "skill": "quadratic_intro",
+          "label": "Quadratic equations introduction"
+        },
+        {
+          "id": "G9-A-03",
+          "skill": "rational_expressions",
+          "label": "Rational expressions"
+        }
+      ]
+    }
+  },
+  "grade_10": {
+    "domains": {
+      "Algebra and Functions": [
+        {
+          "id": "G10-AF-01",
+          "skill": "quadratic_equations",
+          "label": "Quadratic equations"
+        },
+        {
+          "id": "G10-AF-02",
+          "skill": "functions",
+          "label": "Functions"
+        }
+      ],
+      "Statistics": [
+        {
+          "id": "G10-S-01",
+          "skill": "statistics",
+          "label": "Statistics"
+        }
+      ]
+    }
+  }
+}
