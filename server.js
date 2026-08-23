@@ -579,17 +579,21 @@ app.post("/api/speak",async(req,res)=>{
  const {text,voice}=req.body||{};
  if(!text)return res.status(400).json({error:"No text"});
  if(!AI_KEY){return res.status(503).json({error:"No API key"})}
+ const validVoices=["tara","leah","jess","leo","dan","mia","zac","zoe"];
+ const useVoice=validVoices.includes(voice)?voice:"tara";
  try{
+  console.log("[TTS] Requesting voice:",useVoice,"text:",text.substring(0,50)+"...");
   const r=await fetch("https://api.groq.com/openai/v1/audio/speech",{
    method:"POST",
    headers:{"Content-Type":"application/json","Authorization":`Bearer ${AI_KEY}`},
-   body:JSON.stringify({model:"canopylabs/orpheus-v1-english",input:text,voice:voice||"tara",response_format:"wav"})
+   body:JSON.stringify({model:"canopylabs/orpheus-v1-english",input:text,voice:useVoice,response_format:"wav"})
   });
-  if(!r.ok){console.log("[MathBuddy] TTS error:",r.status);return res.status(502).json({error:"TTS unavailable"})}
+  if(!r.ok){const err=await r.text();console.log("[TTS] Error:",r.status,err);return res.status(502).json({error:"TTS error: "+r.status})}
   res.set({"Content-Type":"audio/wav","Cache-Control":"no-cache"});
   const buf=Buffer.from(await r.arrayBuffer());
+  console.log("[TTS] Success, size:",buf.length);
   res.send(buf);
- }catch(e){console.log("[MathBuddy] TTS failed:",e.message);res.status(502).json({error:"TTS failed"})}
+ }catch(e){console.log("[TTS] Failed:",e.message);res.status(502).json({error:"TTS failed"})}
 });
 
 app.post("/api/question",(req,res)=>{let b=req.body||{},g=Math.max(1,Math.min(10,+b.grade||1)),op=b.operation||"addition",s=b.skillState||{},p=PATTERNS(g),maxLvl=p.length,idx=Math.max(0,Math.min(p.length-1,(s.level||1)-1)),pat=p[idx];
