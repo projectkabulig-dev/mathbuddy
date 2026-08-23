@@ -1,0 +1,9 @@
+{
+  "name": "MathBuddy AI Tutor",
+  "short_name": "MathBuddy",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#e6f0eb",
+  "theme_color": "#071a33",
+  "icons": []
+}

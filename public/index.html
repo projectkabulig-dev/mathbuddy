@@ -1,0 +1,686 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>MathBuddy V11</title>
+<style>body{margin:0;font-family:system-ui;background:#e6f0eb;color:#10213a}.top{background:#071a33;color:#fff;padding:15px 20px;font-weight:900}.main{max-width:1050px;margin:auto;padding:18px}.card{background:#fff;padding:18px;border-radius:18px;margin-bottom:14px;box-shadow:0 8px 25px #173d2a14}.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.row{display:grid;grid-template-columns:1fr 1fr;gap:9px}input,select{width:100%;padding:12px;border:1px solid #ccd8d3;border-radius:10px;box-sizing:border-box}button{padding:12px;border:0;border-radius:10px;font-weight:900;cursor:pointer}.green{background:#28bd60;color:#fff}.dark{background:#071a33;color:#fff}.q{font-size:42px;font-weight:900;text-align:center;padding:25px}.robot{text-align:center;background:#fff}.robot b{font-size:75px}.comp{padding:10px;background:#eef2f0;border-radius:10px;margin:6px 0;cursor:pointer}.active{outline:2px solid #28bd60}.metric{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.metric div{background:#eef2f0;padding:10px;border-radius:10px}.metric b{font-size:20px;display:block}.bar{height:8px;background:#dbe4e0;border-radius:20px}.fill{height:100%;background:#28bd60;border-radius:20px}@media(max-width:800px){.grid{grid-template-columns:1fr}}</style>
+<style>
+.bot{width:190px;margin:4px auto 0;position:relative;transition:.25s;transform-origin:center bottom;filter:drop-shadow(0 14px 18px rgba(10,30,25,.22))}
+.bot img{display:block;width:100%;height:auto}
+.bot.idle{animation:float 3s ease-in-out infinite}
+.bot.think{animation:think .8s ease-in-out infinite alternate}
+.bot.encourage{animation:bounce .55s ease-in-out 2}
+.bot.celebrate{animation:celebrate .65s ease-in-out 2}
+.bot.speaking{animation:speak 0.4s ease-in-out infinite alternate}
+.bot.happy{animation:celebrate .65s ease-in-out 2}
+@keyframes float{50%{transform:translateY(-6px)}}
+@keyframes think{to{transform:rotate(3deg) translateY(-3px)}}
+@keyframes bounce{50%{transform:translateY(-18px)}}
+@keyframes celebrate{25%{transform:rotate(-7deg) translateY(-8px)}75%{transform:rotate(7deg) translateY(-8px)}}
+@keyframes speak{to{transform:scale(1.03) translateY(-2px)}}
+.msg{padding:8px 12px;border-radius:12px;margin-bottom:6px;line-height:1.5;max-width:92%;word-wrap:break-word}
+.bot-msg{background:#e3f0ff;color:#0d1f38;border-bottom-left-radius:4px}
+.user-msg{background:#071a33;color:#fff;margin-left:auto;border-bottom-right-radius:4px;text-align:right}
+.typing-msg{background:#e3f0ff;color:#687583;font-style:italic;border-bottom-left-radius:4px}
+.state{font-size:12px;font-weight:900;letter-spacing:.3px}
+</style>
+<link rel="manifest" href="/manifest.webmanifest"><script>if("serviceWorker" in navigator)navigator.serviceWorker.register("/sw.js");</script><script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Caveat:wght@700&family=Nunito:wght@600;800&display=swap" rel="stylesheet"></head>
+<body><header class="top">🤖 MathBuddy <span style="font-weight:400;font-size:12px;opacity:.75;margin-left:6px">Project KABULIG · Developed by Sir Dyon</span><span style="float:right;font-size:12px;font-weight:400;opacity:.7">SDO Romblon</span></header><main class="main">
+<div class="card"><div class="row"><div><label for="name" style="display:block;font-weight:900;font-size:12px;margin-bottom:5px;color:#425466">Name of the Student</label><input id="name" placeholder="Learner name"></div><div><label for="grade" style="display:block;font-weight:900;font-size:12px;margin-bottom:5px;color:#425466">Grade Level</label><select id="grade"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select></div></div><button class="dark" id="register" style="margin-top:9px;width:100%">Start / Continue Learning</button><p style="font-size:11px;color:#687583;margin:6px 0 0">Type the exact name you used before to resume your progress on any device — even a new one.</p><div id="reg"></div></div>
+<div class="grid"><section><div class="card robot">
+  <div id="bot" class="bot idle" aria-label="MathBuddy animated tutor">
+    <img src="/mathbuddy-mascot.png" alt="MathBuddy" style="width:190px;height:auto;pointer-events:none">
+  </div>
+  <div class="state" id="botState">Ready to learn</div>
+  <div id="chatBox" style="margin-top:10px;border-top:1px solid #d7e3dd;padding-top:10px;text-align:left">
+    <div style="font-weight:900;font-size:13px;margin-bottom:6px">💬 Talk to MathBuddy</div>
+    <div id="chatHistory" style="max-height:400px;overflow-y:auto;padding:8px;background:#f4f8f6;border-radius:12px;margin-bottom:8px;font-size:13px">
+      <div class="msg bot-msg">Hello! I'm MathBuddy. Ask me anything about math — like "How do I add 24 + 38?" or "Paano mag-divide?" 😊</div>
+    </div>
+    <div style="display:flex;gap:6px">
+      <input id="chatInput" placeholder="Ask MathBuddy a question..." style="flex:1;padding:10px;border:1px solid #ccd8d3;border-radius:10px;font-size:13px">
+      <button class="dark" id="chatMic" type="button" style="padding:10px 14px;font-size:16px" title="Speak your question">🎤</button>
+      <button class="green" id="chatSend" type="button" style="padding:10px 16px">Send</button>
+    </div>
+    <p id="chatVoiceStatus" style="font-size:11px;color:#687583;margin:4px 0 0"></p>
+  </div>
+  <div style="margin-top:14px;padding-top:14px;border-top:1px solid #d7e3dd;text-align:left">
+    <div style="font-weight:900;font-size:13px;margin-bottom:8px">🎙️ Voice Settings</div>
+    <label style="display:flex;align-items:center;gap:8px;margin-bottom:10px;cursor:pointer;font-size:13px;font-weight:700">
+      <input type="checkbox" id="voiceEnabled" checked style="width:18px;height:18px;accent-color:#28bd60">
+      AI Voice On/Off
+      <span id="voiceOnOff" style="font-weight:400;color:#687583">🔊 On</span>
+    </label>
+    <select id="voiceLang" style="margin-bottom:8px">
+      <option value="en-PH">English (Philippines)</option>
+      <option value="fil-PH">Filipino</option>
+    </select>
+    <select id="voiceGender" style="margin-bottom:8px">
+      <option value="tara">🌟 Tara (Natural Female)</option>
+      <option value="leah">🌟 Leah (Natural Female)</option>
+      <option value="jess">🌟 Jess (Natural Female)</option>
+      <option value="mia">🌟 Mia (Natural Female)</option>
+      <option value="zoe">🌟 Zoe (Natural Female)</option>
+      <option value="leo">🌟 Leo (Natural Male)</option>
+      <option value="dan">🌟 Dan (Natural Male)</option>
+      <option value="zac">🌟 Zac (Natural Male)</option>
+      <option value="browser-female">📱 Browser Female (offline)</option>
+      <option value="browser-male">📱 Browser Male (offline)</option>
+    </select>
+    <select id="voicePick" style="margin-bottom:8px"><option value="">Auto (best for selected type)</option></select>
+  </div>
+</div><div class="card"><h3>Competencies</h3><div id="comps"></div></div><div class="card"><h3>Learner Model</h3><div class="metric"><div><b id="mastery">50%</b>Mastery</div><div><b id="accuracy">0%</b>Accuracy</div><div><b id="level">1</b>Level</div></div><div class="bar" style="margin-top:10px"><div class="fill" id="fill" style="width:50%"></div></div></div></section>
+<section><div class="card"><b id="title">Addition</b><p id="levelInfo" style="font-size:12px;font-weight:900;color:#687583;margin:4px 0 0">Level 1 · Item 1/10</p><div class="q" id="q">?</div><div class="row" style="margin-bottom:9px"><button class="dark" id="hearQ" type="button">🔊 Hear Problem</button><button class="dark" id="micAns" type="button">🎤 Speak Answer</button></div><input id="answer" inputmode="numeric" placeholder="Answer"><button class="green" id="check" style="width:100%;margin-top:9px">Check Answer</button><p id="feedback"></p><p id="exVoiceStatus" style="font-size:12px;color:#687583"></p></div><div class="card"><h3>🧭 Adaptive Diagnostic & Placement</h3><p style="font-size:12px;color:#687583">The diagnostic samples skills and identifies priority gaps. Placement is evidence-based and should be validated before formal assessment use.</p><button class="dark" id="runDiag" style="width:100%">Start Diagnostic</button><div id="diagBox" style="margin-top:10px"></div></div><div class="card"><h3>📚 Curriculum Mapping</h3><p style="font-size:12px;color:#687583">Routing layer: Grade → Domain → Competency → Skill. The included map is a prototype and must be validated against the current official DepEd curriculum before instructional deployment.</p><div id="curriculumMap">Loading...</div></div><div class="card"><h3>Teacher Dashboard Snapshot</h3><div id="dash">Loading...</div></div></section></div></main>
+<footer style="text-align:center;padding:18px 20px;background:#071a33;color:#fff;font-size:12px;margin-top:10px">
+<div style="font-weight:900;font-size:14px;margin-bottom:4px">🤖 MathBuddy — Project KABULIG</div>
+<div style="opacity:.7">Developed by Sir Dyon · Education Program Supervisor I (Mathematics) · SDO Romblon</div>
+</footer>
+<div id="trophyModal" style="display:none;position:fixed;inset:0;background:rgba(7,26,51,.55);z-index:999;align-items:center;justify-content:center;padding:16px">
+ <div style="background:#fff;border-radius:18px;max-width:420px;width:100%;padding:26px;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.28)">
+  <div style="font-size:60px;line-height:1">🏆</div>
+  <h2 style="margin:10px 0 4px">Great job, <span id="trophyName">Learner</span>!</h2>
+  <p id="trophySubtitle" style="color:#425466;font-size:13px;margin:0 0 14px">You completed a full set of 15 items.</p>
+  <div class="metric" style="margin-bottom:16px">
+   <div><b id="trophyAccuracy">0%</b>Accuracy</div>
+   <div><b id="trophyMastery">0%</b>Mastery</div>
+   <div><b>15</b>Items</div>
+  </div>
+  <button class="green" id="downloadCert" type="button" style="width:100%;margin-bottom:8px">📄 Download Certificate (PDF)</button>
+  <button class="dark" id="closeTrophy" type="button" style="width:100%">Continue Learning</button>
+ </div>
+</div>
+<script>
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+
+async function teacherDashboard(){
+ const res=await fetch("/api/teacher/class",{headers:authHeaders()});
+ if(!res.ok)return;
+ const rows=await res.json();
+ if(!Array.isArray(rows))return;
+ const valid=rows.filter(x=>x.attempts);
+ const avg=valid.length?valid.reduce((a,x)=>a+x.mastery,0)/valid.length:0;
+ const risk=rows.filter(x=>x.status==="AT RISK").length;
+ $("#teacherSummary").innerHTML=`<div class="metric"><div><b>${rows.length}</b>Learners</div><div><b>${Math.round(avg*100)}%</b>Avg Mastery</div><div><b>${risk}</b>At Risk</div></div>`;
+ $("#classRows").innerHTML=rows.map(x=>`<tr><td style="padding:8px">${esc(x.name)}</td><td style="text-align:center">${x.attempts}</td><td style="text-align:center">${Math.round(x.accuracy*100)}%</td><td style="text-align:center">${Math.round(x.mastery*100)}%</td><td style="text-align:center"><span style="font-weight:900">${x.status}</span></td></tr>`).join("")||`<tr><td colspan="5" style="padding:12px">No learners registered yet.</td></tr>`;
+ const iv=await(await fetch("/api/teacher/interventions",{headers:authHeaders()})).json();
+ $("#interventions").innerHTML=iv.map(x=>`<div style="background:#eef2f0;padding:10px;border-radius:10px;margin:6px 0"><b>${x.competency}</b> · error rate ${Math.round(x.error_rate*100)}%<br><span style="font-size:11px">${x.recommendation.action}: ${x.recommendation.steps.join(" → ")}</span></div>`).join("")||"No intervention data yet.";
+}
+
+
+
+$("#loadReport").onclick=async()=>{let id=$("#reportLearnerId").value.trim()||learner?.id;if(!id){$("#reportBox").textContent="Enter or create a learner first.";return}
+ let r=await(await fetch(`/api/report/${id}`,{headers:authHeaders()})).json();if(r.error){$("#reportBox").textContent=r.error;return}
+ let p=await(await fetch(`/api/progress/${id}`,{headers:authHeaders()})).json();let days=p.days||[];
+ let max=Math.max(1,...days.map(x=>x.mastery||0));
+ $("#reportBox").innerHTML=`<div class="metric"><div><b>${esc(r.learner.name)}</b>Learner</div><div><b>Grade ${r.learner.grade}</b>Current grade</div><div><b>${r.skills.length}</b>Tracked skills</div></div>
+ <div style="margin-top:10px"><b>Skill Progress</b>${r.skills.map(x=>`<div style="margin:7px 0;padding:9px;background:#eef2f0;border-radius:9px"><b>${x.competency}</b> · ${x.status}<br>Accuracy ${Math.round(x.accuracy*100)}% · Mastery ${Math.round(x.mastery*100)}%<div class="bar"><div class="fill" style="width:${Math.round(x.mastery*100)}%"></div></div></div>`).join("")||"No evidence yet."}</div>
+ <div style="margin-top:10px"><b>Longitudinal Sessions</b>${days.slice(-7).map(x=>`<div style="font-size:11px;padding:4px">${x.day}: ${x.attempts} attempts · ${Math.round(x.accuracy*100)}% accuracy · ${Math.round(x.mastery*100)}% mastery</div>`).join("")||"No sessions yet."}</div>
+ <a href="/api/report/${encodeURIComponent(id)}.csv" target="_blank" style="display:block;margin-top:10px;text-decoration:none"><button class="green" style="width:100%">Export CSV Report</button></a>`;
+};
+
+
+const QUEUE_KEY="mathbuddy_attempt_queue_v19",DB_NAME="MathBuddyOffline",DB_VERSION=1,STORE="attempts";
+let idb=null;
+function openQueueDB(){return new Promise((resolve,reject)=>{if(!("indexedDB" in window))return resolve(null);let r=indexedDB.open(DB_NAME,DB_VERSION);r.onupgradeneeded=()=>r.result.createObjectStore(STORE,{keyPath:"queueId",autoIncrement:true});r.onsuccess=()=>{idb=r.result;resolve(idb)};r.onerror=()=>resolve(null)})}
+async function getQueue(){if(!idb)await openQueueDB();if(!idb){try{return JSON.parse(localStorage.getItem(QUEUE_KEY)||"[]")}catch{return[]}}return new Promise(resolve=>{let a=[];let r=idb.transaction(STORE,"readonly").objectStore(STORE).openCursor();r.onsuccess=e=>{let c=e.target.result;if(c){a.push(c.value);c.continue()}else resolve(a)}})}
+async function setQueue(q){if(!idb)await openQueueDB();if(!idb){localStorage.setItem(QUEUE_KEY,JSON.stringify(q));return}await new Promise(resolve=>{let tx=idb.transaction(STORE,"readwrite"),s=tx.objectStore(STORE);s.clear();for(const x of q){let y={...x};delete y.queueId;s.add(y)}tx.oncomplete=resolve;tx.onerror=resolve})}
+async function renderQueue(){const q=await getQueue();$("#queueStatus").textContent=`Queued attempts: ${q.length}`;$("#netStatus").textContent=navigator.onLine?"🟢 Online":"🔴 Offline - saving locally";}
+
+
+async function queueOrSendAttempt(payload){
+ if(!navigator.onLine){const q=await getQueue();q.push({...payload,queuedAt:new Date().toISOString(),clientId:crypto.randomUUID?.()||String(Date.now())});await setQueue(q);await renderQueue();return {queued:true,skillState:payload.skillState}}
+ try{
+  const r=await fetch("/api/attempt",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
+  if(!r.ok)throw Error("sync failed");
+  return await r.json();
+ }catch(e){
+  const q=await getQueue();q.push({...payload,queuedAt:new Date().toISOString(),clientId:crypto.randomUUID?.()||String(Date.now())});await setQueue(q);await renderQueue();return {queued:true,skillState:payload.skillState};
+ }
+}
+async function syncQueue(){
+ if(!navigator.onLine)return;
+ let q=await getQueue();if(!q.length){await renderQueue();return}
+ const remain=[];
+ for(const payload of q){
+  try{const r=await fetch("/api/attempt",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});if(!r.ok)throw Error("bad");}
+  catch(e){remain.push(payload)}
+ }
+ await setQueue(remain);await renderQueue();if(!remain.length)$("#netStatus").textContent="🟢 Online - all queued data synced";
+}
+window.addEventListener("online",()=>{renderQueue();syncQueue()});
+window.addEventListener("offline",renderQueue);
+$("#syncNow").onclick=syncQueue;openQueueDB().then(renderQueue);
+
+
+function authHeaders(){const t=sessionStorage.getItem("mathbuddy_token");return t?{"Authorization":"Bearer "+t}:{}}
+$("#loginBtn").onclick=async()=>{
+ const username=$("#loginUser").value,password=$("#loginPass").value;
+ const r=await fetch("/api/auth/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({username,password,role:"teacher"})});
+ const d=await r.json();
+ if(!r.ok){$("#loginStatus").textContent=d.error||"Login failed";return}
+ sessionStorage.setItem("mathbuddy_token",d.token);$("#loginStatus").textContent="🟢 Teacher session active";
+ teacherDashboard();loadClasses();loadSchools();loadAnalytics();
+};
+
+
+$("#privacyBtn").onclick=async()=>{
+ const r=await fetch("/api/privacy/request",{method:"POST",headers:{"Content-Type":"application/json",...authHeaders()},body:JSON.stringify({type:$("#privacyType").value,target:$("#privacyTarget").value})});
+ const d=await r.json();$("#privacyStatus").textContent=r.ok?"Request recorded: "+d.status:(d.error||"Request failed");
+};
+
+
+async function loadClasses(){
+ const r=await fetch("/api/classes",{headers:authHeaders()});if(!r.ok){$("#classList").textContent="Login as teacher/admin to manage classes.";return}
+ const cs=await r.json();
+ $("#classList").innerHTML=cs.map(c=>`<button class="dark classBtn" data-id="${esc(c.id)}" style="width:100%;margin:4px 0;text-align:left">Grade ${c.grade} · ${esc(c.name)} · ${esc(c.section||"No section")}</button>`).join("")||"No classes yet.";
+ document.querySelectorAll(".classBtn").forEach(b=>b.onclick=()=>loadRoster(b.dataset.id));
+}
+$("#createClass").onclick=async()=>{const b={name:$("#className").value,grade:+$("#classGrade").value||1,section:$("#classSection").value};
+ const r=await fetch("/api/classes",{method:"POST",headers:{"Content-Type":"application/json",...authHeaders()},body:JSON.stringify(b)});if(r.ok){loadClasses()}else{$("#classList").textContent=(await r.json()).error||"Unable to create class"}};
+async function loadRoster(id){
+ const r=await fetch(`/api/classes/${id}/roster`,{headers:authHeaders()});const rows=await r.json();
+ $("#rosterBox").innerHTML=`<b>Class Roster</b>`+rows.map(x=>`<div style="margin:6px 0;padding:9px;background:#eef2f0;border-radius:9px"><b>${esc(x.name)}</b> · Grade ${x.grade}<br>Attempts: ${x.attempts} · Accuracy: ${Math.round(x.accuracy*100)}% · Mastery: ${Math.round(x.mastery*100)}%</div>`).join("")||"<p>No enrolled learners.</p>";
+}
+
+
+$("#bulkImportBtn").onclick=async()=>{
+ const lines=$("#bulkLearners").value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+ const learners=lines.map(line=>{const p=line.split(",").map(x=>x.trim());return {id:p[0],name:p[1],grade:+p[2]||1,section:p[3]||""}});
+ const r=await fetch("/api/learners/bulk",{method:"POST",headers:{"Content-Type":"application/json",...authHeaders()},body:JSON.stringify({learners})});
+ const d=await r.json();$("#bulkStatus").textContent=r.ok?`Imported ${d.added}. Skipped ${d.skipped}. Errors: ${(d.errors||[]).length}`:(d.error||"Import failed");
+};
+async function loadSchools(){const r=await fetch("/api/schools",{headers:authHeaders()});if(!r.ok)return;const s=await r.json();$("#schoolList").innerHTML=s.map(x=>`<div style="padding:7px;background:#eef2f0;border-radius:8px;margin:5px 0"><b>${esc(x.name)}</b><br><small>School ID: ${esc(x.id)} · Division: ${esc(x.division_id)}</small></div>`).join("")||"No schools yet."}
+
+
+async function loadAnalytics(){
+ const [s,c]=await Promise.all([
+  fetch("/api/analytics/summary",{headers:authHeaders()}),
+  fetch("/api/analytics/competencies",{headers:authHeaders()})
+ ]);
+ if(!s.ok||!c.ok){$("#analyticsStatus").textContent="Login required.";return}
+ const grades=await s.json(),skills=await c.json();
+ const learners=grades.reduce((a,x)=>a+x.learners,0),attempts=grades.reduce((a,x)=>a+x.attempts,0);
+ const acc=attempts?grades.reduce((a,x)=>a+x.accuracy*x.attempts,0)/attempts:0;
+ const mastery=attempts?grades.reduce((a,x)=>a+x.mastery*x.attempts,0)/attempts:0;
+ $("#analyticsKpi").innerHTML=`<div><b>${learners}</b>Learners</div><div><b>${attempts}</b>Attempts</div><div><b>${Math.round(acc)}%</b>Accuracy</div><div><b>${Math.round(mastery)}%</b>Mastery</div>`;
+ $("#gradeAnalytics").innerHTML="<b>By Grade Level</b>"+grades.map(x=>`<div style="margin:7px 0;padding:9px;background:#eef2f0;border-radius:9px"><b>Grade ${x.grade}</b> · ${x.learners} learners · ${x.attempts} attempts<br>Accuracy ${Math.round(x.accuracy)}% · Mastery ${Math.round(x.mastery)}%</div>`).join("")||"No data.";
+ $("#competencyAnalytics").innerHTML="<b>Competency Gaps</b>"+skills.map(x=>`<div style="margin:7px 0;padding:9px;background:#fff1e8;border-radius:9px"><b>${x.competency}</b><br>Accuracy ${Math.round(x.accuracy)}% · Mastery ${Math.round(x.mastery)}% · ${x.attempts} attempts</div>`).join("")||"No competency data.";
+}
+$("#refreshAnalytics").onclick=loadAnalytics;
+
+
+$("#loadIntervention").onclick=async()=>{
+ const id=$("#interventionLearner").value.trim()||learner?.id;if(!id){$("#interventionBox").textContent="Enter a learner ID.";return}
+ const r=await fetch(`/api/intervention/${id}`,{headers:authHeaders()});const d=await r.json();
+ if(!r.ok){$("#interventionBox").textContent=d.error||"Unable to generate plan.";return}
+ $("#interventionBox").innerHTML=d.recommendations.map(x=>{
+  const icon=x.level==="INTENSIVE"?"🔴":x.level==="DEVELOPING"?"🟡":"🟢";
+  return `<div style="margin:8px 0;padding:10px;background:#eef2f0;border-radius:9px"><b>${icon} ${x.competency}</b><br>Mastery: ${Math.round(x.mastery)}% · Accuracy: ${Math.round(x.accuracy)}%<br><b>${x.level}</b>: ${x.action}</div>`;
+ }).join("")||"Not enough evidence yet.";
+};
+
+
+$("#generateAdaptive").onclick=async()=>{
+ const grade=+$("#adaptiveGrade").value||1,operation=$("#adaptiveOp").value,mastery=+$("#adaptiveMastery").value||0;
+ const r=await fetch("/api/adaptive-item",{method:"POST",headers:{"Content-Type":"application/json",...authHeaders()},body:JSON.stringify({grade,operation,mastery})});
+ const d=await r.json();if(!r.ok){$("#adaptiveResult").textContent=d.error||"Unable to generate";return}
+ $("#adaptiveResult").innerHTML=`<div style="padding:12px;background:#eef2f0;border-radius:10px"><b>Grade ${d.grade}</b> · ${d.operation} · ${d.pair}<br><span style="font-size:22px;font-weight:900">${d.a} ${d.operation==="addition"?"+":d.operation==="subtraction"?"−":d.operation==="multiplication"?"×":"÷"} ${d.b} = ?</span><br><small>Mastery band: ${d.masteryBand}</small></div>`;
+};
+
+
+$("#analyzeMc").onclick=async()=>{
+ const payload={operation:$("#mcOp").value,a:+$("#mcA").value,b:+$("#mcB").value,answer:+$("#mcAns").value};
+ const r=await fetch("/api/analyze-response",{method:"POST",headers:{"Content-Type":"application/json",...authHeaders()},body:JSON.stringify(payload)});
+ const d=await r.json();if(!r.ok){$("#mcResult").textContent=d.error||"Unable to analyze.";return}
+ $("#mcResult").innerHTML=d.misconceptions.length?
+  `<b>Possible misconception:</b><ul>${d.misconceptions.map(x=>`<li>${x.replaceAll("_"," ")}</li>`).join("")}</ul><b>Suggested scaffold:</b><ul>${d.scaffolds.map(x=>`<li>${x}</li>`).join("")}</ul>`:
+  `<b>Calculation pattern:</b> no known misconception detected. Correct answer is ${d.correct}.`;
+};
+
+
+$("#dialogueBtn").onclick=async()=>{
+ const r=await fetch("/api/tutor/dialogue",{method:"POST",headers:{"Content-Type":"application/json",...authHeaders()},body:JSON.stringify({
+  grade:+$("#dialogueGrade").value||1,problem:$("#dialogueProblem").value,correctAnswer:$("#dialogueCorrect").value,
+  studentResponse:$("#dialogueStudent").value,answer:""
+ })});
+ const d=await r.json();$("#dialogueResult").innerHTML=r.ok?`<div style="padding:12px;background:#eef2f0;border-radius:10px"><b>🤖 Tutor:</b> ${d.reply}<br><small>Next action: ${d.nextAction}</small></div>`:(d.error||"Unable to start dialogue.");
+};
+
+
+let recognition=null,lastVoiceText="";
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+if(SR){
+ recognition=new SR();recognition.continuous=false;recognition.interimResults=true;recognition.lang="en-PH";
+ recognition.onstart=()=>$("#voiceStatus").textContent="🟢 Listening...";
+ recognition.onend=()=>$("#voiceStatus").textContent="Stopped.";
+ recognition.onresult=e=>{let t="";for(let i=e.resultIndex;i<e.results.length;i++)t+=e.results[i][0].transcript;lastVoiceText=t;$("#voiceTranscript").textContent=t;};
+}else $("#voiceStatus").textContent="Speech recognition is not supported by this browser.";
+$("#voiceLang").onchange=()=>{if(recognition)recognition.lang=$("#voiceLang").value};
+$("#voiceStart").onclick=()=>{if(!recognition){$("#voiceStatus").textContent="Speech recognition unavailable.";return}recognition.lang=$("#voiceLang").value;recognition.start()};
+$("#voiceStop").onclick=()=>recognition?.stop();
+$("#voiceSpeak").onclick=()=>{
+ const text=$("#voiceReply").textContent.trim()||"Tell me how you got your answer.";
+ if("speechSynthesis" in window){speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang=$("#voiceLang").value;speechSynthesis.speak(u)}
+};
+
+let lastTutorSpeech="";
+let cachedVoices=[];
+const FEMALE_HINTS=/female|woman|girl|zira|hazel|susan|samantha|karen|moira|fiona|tessa|alice|amelie|anna|carmit|damayanti|ellen|ioana|joana|kanya|kyoko|lana|laura|lekha|luciana|mariska|meijia|melina|milena|monica|nora|paulina|sara|satu|sinji|tina|yelda|zosia|Google.*Female/i;
+const MALE_HINTS=/male|man|boy|david|mark|james|daniel|thomas|jorge|juan|diego|luca|yuri|Google.*Male/i;
+function voiceGender(v){
+ const n=v.name||"";
+ if(FEMALE_HINTS.test(n))return "female";
+ if(MALE_HINTS.test(n))return "male";
+ return "unknown";
+}
+function loadVoices(){cachedVoices=window.speechSynthesis?speechSynthesis.getVoices():[];populateVoicePicker()}
+if("speechSynthesis" in window){loadVoices();speechSynthesis.onvoiceschanged=loadVoices}
+function populateVoicePicker(){
+ const sel=$("#voicePick");if(!sel||!sel.tagName)return;
+ const prev=sel.value;
+ const gender=$("#voiceGender")?.value||"female";
+ const filtered=cachedVoices.filter(v=>{const g=voiceGender(v);return g===gender||g==="unknown"});
+ const sorted=[...(filtered.length?filtered:cachedVoices)].sort((a,b)=>a.name.localeCompare(b.name));
+ sel.innerHTML=`<option value="">Auto (best for selected type)</option>`+sorted.map(v=>`<option value="${esc(v.name)}">${esc(v.name)} (${esc(v.lang)})</option>`).join("");
+ if(sorted.some(v=>v.name===prev))sel.value=prev;else sel.value="";
+}
+$("#voiceGender").onchange=()=>populateVoicePicker();
+$("#voiceEnabled").onchange=function(){$("#voiceOnOff").textContent=this.checked?"🔊 On":"🔇 Off";if(!this.checked&&"speechSynthesis" in window)window.speechSynthesis.cancel()};
+function pickVoice(lang){
+ const picked=$("#voicePick")?.value;
+ if(picked){const chosen=cachedVoices.find(v=>v.name===picked);if(chosen)return chosen}
+ if(!cachedVoices.length)return null;
+ const gender=$("#voiceGender")?.value||"female";
+ const base=lang.split("-")[0];
+ const langMatches=cachedVoices.filter(v=>v.lang&&v.lang.toLowerCase().startsWith(base));
+ const pool=langMatches.length?langMatches:cachedVoices.filter(v=>v.lang&&v.lang.toLowerCase().startsWith("en"));
+ if(!pool.length)return cachedVoices[0];
+ const genderPool=pool.filter(v=>{const g=voiceGender(v);return g===gender});
+ const candidates=genderPool.length?genderPool:pool;
+ const preferredNames=/natural|neural|online|enhanced|premium|google/i;
+ return candidates.find(v=>preferredNames.test(v.name))||candidates.find(v=>v.localService===false)||candidates[0];
+ return pool.find(v=>preferredNames.test(v.name))||pool.find(v=>v.localService===false)||pool[0];
+}
+
+const PRAISE=["Excellent!","Good job!","Great work!","Well done!","Perfect!","Nailed it!","Amazing!","Correct!","Awesome!","You got it!"];
+const ENCOURAGE=["Good try!","Keep going!","Almost there!","Nice effort!","You're learning!","Don't give up!","So close!","Try again, you can do it!"];
+function randomFrom(arr){return arr[Math.floor(Math.random()*arr.length)]}
+function toSpeechText(q){
+ return String(q||"").replace(/×/g," times ").replace(/÷/g," divided by ").replace(/−/g," minus ").replace(/\+/g," plus ").replace(/=/g," equals ");
+}
+function speakText(text,statusSel,label){
+ if(!text)return;
+ if(!$("#voiceEnabled").checked)return;
+ const voice=$("#voiceGender")?.value||"tara";
+ if(voice.startsWith("browser")){
+  if(!("speechSynthesis" in window)){if(statusSel)$(statusSel).textContent="Voice not supported.";return}
+  window.speechSynthesis.cancel();
+  const lang=$("#voiceLang")?.value||"en-PH";
+  const u=new SpeechSynthesisUtterance(text);
+  const v=pickVoice(lang);if(v)u.voice=v;
+  u.lang=lang;u.rate=0.88;u.pitch=voice==="browser-male"?0.9:1.05;
+  if(statusSel){const prev=$(statusSel).textContent;u.onstart=()=>$(statusSel).textContent=label||"🔊 Speaking...";u.onend=()=>$(statusSel).textContent=prev&&prev!==label?prev:"";u.onerror=()=>$(statusSel).textContent="";}
+  window.speechSynthesis.speak(u);
+ } else {
+  if(statusSel)$(statusSel).textContent=label||"🔊 Speaking...";
+  cloudSpeak(text,voice).then(ok=>{
+   if(!ok){browserSpeak(text)}
+   if(statusSel)$(statusSel).textContent="";
+  });
+ }
+}
+const EN_ONES={zero:0,one:1,two:2,three:3,four:4,five:5,six:6,seven:7,eight:8,nine:9,ten:10,eleven:11,twelve:12,thirteen:13,fourteen:14,fifteen:15,sixteen:16,seventeen:17,eighteen:18,nineteen:19};
+const EN_TENS={twenty:20,thirty:30,forty:40,fifty:50,sixty:60,seventy:70,eighty:80,ninety:90};
+const EN_SCALES={hundred:100,thousand:1000,million:1000000};
+function wordsToNumberEN(text){
+ text=text.toLowerCase().replace(/-/g," ").replace(/\band\b/g," ").trim();
+ const words=text.split(/\s+/).filter(Boolean);
+ if(!words.length)return null;
+ let total=0,current=0,found=false;
+ for(const w of words){
+  if(w in EN_ONES){current+=EN_ONES[w];found=true}
+  else if(w in EN_TENS){current+=EN_TENS[w];found=true}
+  else if(w==="hundred"){current=(current||1)*100;found=true}
+  else if(w in EN_SCALES){total+=(current||1)*EN_SCALES[w];current=0;found=true}
+ }
+ total+=current;
+ return found?total:null;
+}
+const FIL_ONES={isa:1,dalawa:2,dalawang:2,tatlo:3,tatlong:3,apat:4,lima:5,limang:5,anim:6,pito:7,pitong:7,walo:8,walong:8,siyam:9};
+const FIL_TEENS={"labing isa":11,labinisa:11,labindalawa:12,"labing dalawa":12,labintatlo:13,"labing tatlo":13,"labing apat":14,labinapat:14,labinlima:15,"labing lima":15,"labing anim":16,labinganim:16,labimpito:17,"labing pito":17,labingpito:17,labingwalo:18,"labing walo":18,labinsiyam:19,"labing siyam":19};
+const FIL_TENS={sampu:10,dalawampu:20,dalawampung:20,tatlumpu:30,tatlumpung:30,apatnapu:40,apatnapung:40,limampu:50,limampung:50,animnapu:60,animnapung:60,pitumpu:70,pitumpung:70,walumpu:80,walumpung:80,siyamnapu:90,siyamnapung:90};
+const FIL_SCALES={raan:100,daan:100,raang:100,daang:100,libo:1000,libong:1000};
+function wordsToNumberFIL(text){
+ let t=" "+text+" ";
+ t=t.replace(/'t\b/g," at ");
+ const teenEntries=Object.entries(FIL_TEENS).sort((a,b)=>b[0].length-a[0].length);
+ for(const [phrase,val] of teenEntries){
+  const re=new RegExp("\\b"+phrase.replace(/\s+/g,"\\s+")+"\\b","g");
+  t=t.replace(re," "+val+" ");
+ }
+ const words=t.trim().split(/\s+/).filter(Boolean);
+ if(!words.length)return null;
+ let total=0,current=0,found=false;
+ for(const w of words){
+  if(/^\d+$/.test(w)){current+=parseInt(w,10);found=true;continue}
+  if(w==="at")continue;
+  if(w in FIL_ONES){current+=FIL_ONES[w];found=true}
+  else if(w in FIL_TENS){current+=FIL_TENS[w];found=true}
+  else if(w in FIL_SCALES){current=(current||1)*FIL_SCALES[w];total+=current;current=0;found=true}
+ }
+ total+=current;
+ return found?total:null;
+}
+function wordsToNumber(text){
+ text=(text||"").toLowerCase().trim();
+ let n=wordsToNumberEN(text);
+ if(n===null)n=wordsToNumberFIL(text);
+ return n;
+}
+function extractNumber(t){
+ t=(t||"").trim();
+ const m=t.match(/-?\d+(\.\d+)?/);
+ if(m)return m[0];
+ const n=wordsToNumber(t);
+ return n!==null?String(n):t;
+}
+function micToAnswer(inputSel,statusSel){
+ const SR2=window.SpeechRecognition||window.webkitSpeechRecognition;
+ if(!SR2){if(statusSel)$(statusSel).textContent="Speech recognition is not supported in this browser. Type your answer instead.";return}
+ const rec=new SR2();rec.lang=$("#voiceLang")?.value||"en-PH";rec.interimResults=false;
+ rec.onstart=()=>{if(statusSel)$(statusSel).textContent="🎤 Listening..."};
+ rec.onresult=e=>{const t=e.results[0][0].transcript;const val=extractNumber(t);$(inputSel).value=val;if(statusSel)$(statusSel).textContent=(val!==t?`Heard: "${t}" → ${val}`:`Heard: "${t}"`)};
+ rec.onerror=()=>{if(statusSel)$(statusSel).textContent="Couldn't hear that clearly. Try again or type."};
+ rec.onend=()=>{if(statusSel&&$(statusSel).textContent==="🎤 Listening...")$(statusSel).textContent="Ready"};
+ rec.start();
+}
+$("#hearQ").onclick=()=>speakText(toSpeechText(state.q?.q)+"?","#exVoiceStatus","🔊 Reading the problem...");
+$("#micAns").onclick=()=>micToAnswer("#answer","#exVoiceStatus");
+
+function setBotState(emotion="idle", text="Ready to learn"){
+ const bot=$("#bot"); if(!bot)return;
+ bot.classList.remove("idle","think","encourage","celebrate","happy","speaking");
+ bot.classList.add(["happy","celebrate"].includes(emotion)?"celebrate":emotion==="think"?"think":emotion==="encourage"?"encourage":"idle");
+ if(emotion==="happy")bot.classList.add("happy");
+ $("#botState").textContent=text;
+}
+// Cloud TTS via Groq Orpheus
+async function cloudSpeak(text,voice){
+ try{
+  const r=await fetch("/api/speak",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text,voice})});
+  if(!r.ok)throw Error(r.status);
+  const blob=await r.blob();
+  const url=URL.createObjectURL(blob);
+  const audio=new Audio(url);
+  audio.onended=()=>{URL.revokeObjectURL(url);const bot=$("#bot");bot.classList.remove("speaking");bot.classList.add("idle");$("#botState").textContent="Ready for your answer"};
+  audio.onerror=()=>{URL.revokeObjectURL(url)};
+  const bot=$("#bot");bot.classList.remove("idle","think","encourage","celebrate");bot.classList.add("speaking");$("#botState").textContent="Speaking...";
+  await audio.play();
+  return true;
+ }catch(e){return false}
+}
+function browserSpeak(text){
+ if(!("speechSynthesis" in window))return;
+ window.speechSynthesis.cancel();
+ const lang=$("#voiceLang").value||"en-PH";
+ const u=new SpeechSynthesisUtterance(text);
+ const v=pickVoice(lang);if(v)u.voice=v;
+ const sel=$("#voiceGender")?.value||"tara";
+ const isMale=sel==="browser-male";
+ u.lang=lang;u.rate=0.88;u.pitch=isMale?0.9:1.05;u.volume=1.0;
+ const bot=$("#bot");
+ u.onstart=()=>{bot.classList.remove("idle","think","encourage","celebrate");bot.classList.add("speaking");$("#botState").textContent="Speaking..."};
+ u.onend=()=>{bot.classList.remove("speaking");bot.classList.add("idle");$("#botState").textContent="Ready for your answer"};
+ u.onerror=()=>{bot.classList.remove("speaking");bot.classList.add("idle")};
+ window.speechSynthesis.speak(u);
+}
+async function speakTutor(text){
+ if(!text)return;
+ if(!$("#voiceEnabled").checked){if("speechSynthesis" in window)window.speechSynthesis.cancel();return}
+ const voice=$("#voiceGender")?.value||"tara";
+ if(voice.startsWith("browser")){browserSpeak(text);return}
+ const ok=await cloudSpeak(text,voice);
+ if(!ok)browserSpeak(text);
+}
+
+async function talkToTutor(message){
+ const payload={grade:state.grade,competency:state.competency,question:state.q?.q||"",expected:state.q?.a||"",answer:$("#answer").value,message,
+ mastery:skill.mastery,recent:skill.recent||[],correct:state.q?String($("#answer").value).trim()===String(state.q.a).trim():false};
+ const r=await(await fetch("/api/conversation",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)})).json();
+ lastTutorSpeech=r.speech||r.reply||"";
+setBotState(r.emotion||"idle", r.nextQuestion||"Tutor responded.");
+speakTutor(lastTutorSpeech);
+return r;
+}
+
+// === Conversational Chat System ===
+let chatConversation=[];
+function addChatMsg(role,text){
+ const box=$("#chatHistory");
+ const div=document.createElement("div");
+ div.className=role==="user"?"msg user-msg":"msg bot-msg";
+ div.textContent=text;
+ box.appendChild(div);
+ box.scrollTop=box.scrollHeight;
+}
+function showTyping(){
+ const box=$("#chatHistory");
+ const div=document.createElement("div");
+ div.className="msg typing-msg";div.id="typingIndicator";
+ div.textContent="MathBuddy is thinking...";
+ box.appendChild(div);box.scrollTop=box.scrollHeight;
+}
+function removeTyping(){const t=document.getElementById("typingIndicator");if(t)t.remove()}
+
+async function sendChat(){
+ const input=$("#chatInput"),text=input.value.trim();
+ if(!text)return;
+ input.value="";
+ addChatMsg("user",text);
+ showTyping();
+ setBotState("think","Thinking...");
+ try{
+  chatConversation.push({role:"user",content:text});
+  const recentHistory=chatConversation.slice(-10);
+  const payload={
+   grade:state.grade,competency:state.competency,
+   question:state.q?.q||"",expected:state.q?.a||"",
+   answer:"",message:text,
+   mastery:skill.mastery,recent:skill.recent||[],correct:false,
+   chatHistory:recentHistory,
+   learnerProfile:learnerProfile?{name:learnerProfile.learner?.name,overallAccuracy:learnerProfile.overallAccuracy,avgMastery:learnerProfile.avgMastery,weakSkills:learnerProfile.weakSkills,strongSkills:learnerProfile.strongSkills,recentMistakes:learnerProfile.recentMistakes,totalAttempts:learnerProfile.totalAttempts}:null
+  };
+  const r=await(await fetch("/api/conversation",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)})).json();
+  const reply=r.reply||r.speech||"I'm here to help! Try asking me a math question.";
+  removeTyping();
+  addChatMsg("bot",reply);
+  chatConversation.push({role:"assistant",content:reply});
+  setBotState(r.emotion||"idle",r.nextQuestion||"Your turn");
+  speakTutor(r.speech||reply);
+ }catch(e){
+  removeTyping();
+  addChatMsg("bot","Sorry, I couldn't connect right now. Try again!");
+  setBotState("idle","Your turn");
+ }
+}
+$("#chatSend").onclick=sendChat;
+$("#chatInput").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();sendChat()}});
+$("#chatMic").onclick=()=>{
+ const SR2=window.SpeechRecognition||window.webkitSpeechRecognition;
+ if(!SR2){$("#chatVoiceStatus").textContent="Speech recognition not supported.";return}
+ const rec=new SR2();rec.lang=$("#voiceLang")?.value||"en-PH";rec.interimResults=false;
+ rec.onstart=()=>{$("#chatVoiceStatus").textContent="🎤 Listening...";$("#chatMic").style.background="#28bd60"};
+ rec.onresult=e=>{const t=e.results[0][0].transcript;$("#chatInput").value=t;$("#chatVoiceStatus").textContent=`Heard: "${t}"`;sendChat()};
+ rec.onerror=()=>{$("#chatVoiceStatus").textContent="Couldn't hear that. Try again.";$("#chatMic").style.background=""};
+ rec.onend=()=>{$("#chatMic").style.background=""};
+ rec.start();
+};
+
+
+function defaultSkill(){return{attempts:0,correct:0,mastery:.5,recent:[],level:1}}
+let learner=null,learnerProfile=null,skillByOp={addition:defaultSkill(),subtraction:defaultSkill(),multiplication:defaultSkill(),division:defaultSkill()},skill=skillByOp.addition,state={grade:1,operation:"addition",competency:"addition_1x1",q:null,itemsThisLevel:1,prevLevel:1,maxLevel:6};
+function $(x){return document.querySelector(x)||document.createElement("div")}
+async function loadLearnerProfile(){
+ if(!learner?.id)return;
+ try{
+  const r=await fetch(`/api/learners/${learner.id}/profile`);
+  if(r.ok){learnerProfile=await r.json();
+   const summary=learnerProfile.skills||[];
+   const byOp={};
+   summary.forEach(s=>{const op=s.competency.split("_")[0];const b=byOp[op]||(byOp[op]={attempts:0,correct:0,masterySum:0,level:1});b.attempts+=s.attempts||0;b.correct+=s.correct||0;b.masterySum+=(s.mastery||0)*(s.attempts||0);if((s.level||1)>b.level)b.level=s.level||1});
+   Object.keys(byOp).forEach(op=>{const b=byOp[op],sk=skillByOp[op]||(skillByOp[op]=defaultSkill());sk.attempts=b.attempts;sk.correct=b.correct;sk.mastery=b.attempts?b.masterySum/b.attempts:.5;sk.level=b.level});
+   skill=skillByOp[state.operation]||(skillByOp[state.operation]=defaultSkill());
+   render();
+   console.log("[MathBuddy] Learner profile loaded:",learnerProfile.learner.name,"mastery:",Math.round(learnerProfile.avgMastery*100)+"%");
+  }
+ }catch(e){console.log("[MathBuddy] Could not load profile")}
+}
+function saveLearner(){if(learner)localStorage.setItem("mathbuddy_learner",JSON.stringify(learner))}
+function restoreLearner(){try{const s=localStorage.getItem("mathbuddy_learner");if(s){learner=JSON.parse(s);return true}}catch(e){}return false}
+async function curriculum(){let c=await (await fetch(`/api/curriculum?grade=${state.grade}`)).json();$("#comps").innerHTML=c.competencies.map(x=>`<div class="comp ${x===state.competency?"active":""}" data-c="${x}">${c.labels[x]||x}</div>`).join("");document.querySelectorAll(".comp").forEach(e=>e.onclick=()=>{document.querySelectorAll(".comp").forEach(x=>x.classList.remove("active"));e.classList.add("active");state.competency=e.dataset.c;const op=e.dataset.c.split("_")[0];if(op!==state.operation){state.operation=op;skill=skillByOp[op]||(skillByOp[op]=defaultSkill());state.itemsThisLevel=1;state.prevLevel=skill.level||1;render()}newQ()})}
+async function newQ(){let q=await(await fetch("/api/question",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({grade:state.grade,operation:state.operation,competency:state.competency,skillState:skill,itemNumber:state.itemsThisLevel})})).json();state.q=q;if(q.maxLevel)state.maxLevel=q.maxLevel;setBotState("idle","Your turn");
+ if(q.isWordProblem){$("#q").textContent=q.q;$("#q").style.fontSize="16px";$("#q").style.textAlign="left"}
+ else{$("#q").textContent=q.q+" = ?";$("#q").style.fontSize="42px";$("#q").style.textAlign="center"}
+ $("#title").textContent=q.isWordProblem?q.competencyLabel+" (Word Problem)":q.competencyLabel;$("#answer").value="";$("#feedback").textContent=""}
+function render(){let a=skill.attempts?skill.correct/skill.attempts:0;$("#mastery").textContent=Math.round(skill.mastery*100)+"%";$("#accuracy").textContent=Math.round(a*100)+"%";$("#level").textContent=`${skill.level}/${state.maxLevel}`;$("#fill").style.width=(skill.mastery*100)+"%";const item=Math.min(state.itemsThisLevel||1,15);const setNum=Math.min(3,Math.ceil(item/5));const itemInSet=item-((setNum-1)*5);const isWP=(item===5||item===10||item===15);$("#levelInfo").textContent=`Level ${skill.level||1}/${state.maxLevel} · Set ${setNum}/3 · Item ${itemInSet}/5${isWP?" 📝":""}`;}
+async function createNewLearner(name,grade){
+ let r=await(await fetch("/api/learners",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name,grade})})).json();
+ await selectLearner(r,true);
+}
+async function selectLearner(r,isNew){
+ learner=r;saveLearner();
+ state.grade=r.grade||state.grade;$("#grade").value=state.grade;
+ skillByOp={addition:defaultSkill(),subtraction:defaultSkill(),multiplication:defaultSkill(),division:defaultSkill()};skill=skillByOp[state.operation];state.itemsThisLevel=1;state.prevLevel=1;
+ $("#reg").textContent=`✅ ${isNew?"Welcome":"Welcome back"}, ${r.name} — ID: ${r.id}`;
+ render();loadDash();teacherDashboard();
+ curriculum().then(newQ);
+ if(isNew){
+  addChatMsg("bot",`Hi ${r.name}! I'm MathBuddy. Let's learn math together! Try answering the question on the right, or ask me anything.`);
+ } else {
+  await loadLearnerProfile();
+  const pct=learnerProfile?Math.round((learnerProfile.avgMastery||0)*100):null;
+  addChatMsg("bot",pct!==null?`Welcome back, ${r.name}! Last time your average mastery was ${pct}%. Let's pick up where you left off.`:`Welcome back, ${r.name}! Let's continue learning.`);
+ }
+}
+$("#register").onclick=async()=>{
+ const name=$("#name").value.trim(),grade=+$("#grade").value||1;
+ if(!name){$("#reg").textContent="Please type your name first.";return}
+ state.grade=grade;
+ $("#reg").textContent="Checking for an existing record...";
+ let rows=[];
+ try{rows=await(await fetch(`/api/learners/find?name=${encodeURIComponent(name)}`)).json()}catch(e){rows=[]}
+ if(Array.isArray(rows)&&rows.length===1){await selectLearner(rows[0],false);return}
+ if(Array.isArray(rows)&&rows.length>1){
+  $("#reg").innerHTML="We found more than one learner with that name. Please select yours:<br>"
+   +rows.map(r=>`<button class="dark" type="button" style="margin:3px 0;width:100%;text-align:left" data-id="${esc(r.id)}">${esc(r.name)} — Grade ${r.grade}${r.section?(" · "+esc(r.section)):""} (ID: ${esc(r.id)})</button>`).join("")
+   +`<button class="green" type="button" id="newInstead" style="margin-top:6px;width:100%">None of these — create new record</button>`;
+  document.querySelectorAll("#reg button[data-id]").forEach(b=>b.onclick=()=>{const m=rows.find(x=>x.id===b.dataset.id);if(m)selectLearner(m,false)});
+  $("#newInstead").onclick=()=>createNewLearner(name,grade);
+  return;
+ }
+ await createNewLearner(name,grade);
+};
+$("#grade").onchange=()=>{state.grade=+$("#grade").value;state.competency=`addition_${state.grade===1?"1x1":state.grade===2?"2x1":"3x1"}`;state.operation="addition";skillByOp={addition:defaultSkill(),subtraction:defaultSkill(),multiplication:defaultSkill(),division:defaultSkill()};skill=skillByOp.addition;state.itemsThisLevel=1;state.prevLevel=1;state.maxLevel=6;curriculum().then(newQ);loadMap();render()};
+$("#check").onclick=async()=>{let ans=$("#answer").value.trim();if(!ans||!state.q)return;let correct=String(ans).toLowerCase()===String(state.q.a).toLowerCase();let payload={learnerId:learner?.id||"demo",competency:state.competency,question:state.q.q,expected:state.q.a,answer:ans,correct,difficulty:state.q.difficulty,skillState:skill};
+let r=await queueOrSendAttempt(payload);skill=r.skillState||skill;skillByOp[state.operation]=skill;let newLevel=skill.level||1;let leveledUp=newLevel>state.prevLevel,leveledDown=newLevel<state.prevLevel;
+if(leveledUp||leveledDown){state.itemsThisLevel=1}else{state.itemsThisLevel=(state.itemsThisLevel||0)+1}
+const BATCH=15;const cap=state.maxLevel||6;let batchForced=false,mastered=false;
+if(!leveledUp&&!leveledDown&&state.itemsThisLevel>=BATCH){
+ state.itemsThisLevel=1;batchForced=true;
+ if(skill.mastery>=.85){
+  if((skill.level||1)>=cap){mastered=true}
+  else{skill.level=Math.min(cap,(skill.level||1)+1);leveledUp=true}
+ }
+ else if(skill.mastery<.45){skill.level=Math.max(1,(skill.level||1)-1);leveledDown=true}
+ newLevel=skill.level||1;
+}
+state.prevLevel=newLevel;render();let msg=correct?randomFrom(PRAISE):randomFrom(ENCOURAGE);
+if(mastered){$("#feedback").textContent=`🏆 ${msg} Competency mastered!`;addChatMsg("bot",`🏆 Excellent! You've mastered ${state.competency.replace(/_/g," ")} at the highest level for Grade ${state.grade}. Try the next competency or move to a higher grade!`);setBotState("celebrate","Mastered!");speakText(`Congratulations! You've mastered this competency. Try the next one or move to a higher grade!`,"#exVoiceStatus");}
+else if(leveledUp){$("#feedback").textContent=`✓ ${msg} 🎉 Level Up! Now Level ${newLevel}/${cap}.`;addChatMsg("bot",batchForced?`🎉 Batch complete! Mastery is strong — moving to Level ${newLevel}. Keep it up!`:`🎉 Level Up! Now Level ${newLevel}. Keep going!`);setBotState("celebrate",`Level ${newLevel}/${cap}`);speakText(batchForced?`Batch complete! Moving to level ${newLevel}.`:`${msg} Level up! Now level ${newLevel}.`,"#exVoiceStatus");}
+else if(leveledDown){$("#feedback").textContent=`${msg} Let's build up this level a bit more.`;addChatMsg("bot",batchForced?`Batch complete. Let's strengthen the basics — back to Level ${newLevel}.`:"Let's practice a bit more at this level.");setBotState("encourage","Let's build this up");speakText(batchForced?`Batch complete. Let's go back to level ${newLevel}.`:msg,"#exVoiceStatus");}
+else if(batchForced){$("#feedback").textContent=`${msg} 🔄 Batch complete — Level ${newLevel}/${cap} maintained.`;addChatMsg("bot",`Good effort! Mastery at ${Math.round(skill.mastery*100)}%. Let's do another round at Level ${newLevel}.`);setBotState("encourage",`Level ${newLevel}/${cap} · new batch`);speakText(`Batch complete. Let's keep practicing at level ${newLevel}.`,"#exVoiceStatus");}
+else if(correct){$("#feedback").textContent=`✓ ${msg}`;addChatMsg("bot",`✓ ${msg} Can you explain how you got ${state.q.a}?`);speakText(msg,"#exVoiceStatus");}
+else{$("#feedback").textContent=`${msg} The answer is ${state.q.a}.`;addChatMsg("user",`My answer: ${ans}`);setBotState("think","Thinking...");
+ talkToTutor(`I answered ${ans} but the correct answer is ${state.q.a}. Help me understand.`).then(r=>{if(r)addChatMsg("bot",r.reply||r.speech||"Let's work through this together.")});}
+if(batchForced){const batchAccuracy=skill.attempts?skill.correct/skill.attempts:0;showTrophy({name:learner?.name||$("#name").value.trim()||"Learner",accuracy:batchAccuracy,mastery:skill.mastery,competency:state.competency,grade:state.grade,mastered})}
+if(correct)setTimeout(newQ,900);loadDash();teacherDashboard()};
+$("#answer").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();$("#check").click()}});
+async function loadMap(){let g=state.grade;let d=await(await fetch(`/api/curriculum-map?grade=${g}`)).json();let out="";for(const [domain,items] of Object.entries(d.domains||{})){out+=`<div style="margin:8px 0"><b>${domain}</b>${items.map(x=>`<div style="padding:7px 10px;background:#eef2f0;border-radius:8px;margin:4px 0;font-size:12px"><b>${x.id}</b> ${x.label}</div>`).join("")}</div>`}$("#curriculumMap").innerHTML=out||"No mapping available."}
+async function loadDash(){let d=await(await fetch("/api/dashboard")).json();$("#dash").innerHTML=`Learners: <b>${d.learners}</b><br>Attempts: <b>${d.attempts}</b><br>Overall accuracy: <b>${Math.round(d.accuracy*100)}%</b><br>Average mastery: <b>${Math.round(d.averageMastery*100)}%</b><hr>Priority skills: ${(d.prioritySkills||[]).map(x=>`${x.competency} (${Math.round(x.mastery*100)}%)`).join(", ")||"No data yet"}`};
+
+let diagItems=[],diagIndex=0,diagResults=[];
+$("#runDiag").onclick=async()=>{diagItems=(await(await fetch(`/api/diagnostic/items?grade=10`)).json()).items;diagIndex=0;diagResults=[];showDiag()};
+function showDiag(){if(diagIndex>=diagItems.length){finishDiag();return}let x=diagItems[diagIndex];const isWP=x.isWordProblem;$("#diagBox").innerHTML=`<div style="padding:12px;background:#eef7f0;border-radius:12px"><b>Item ${diagIndex+1}/${diagItems.length}${isWP?" 📝 Word Problem":""}</b><p style="font-size:${isWP?"15px":"24px"};font-weight:${isWP?"400":"900"};${isWP?"line-height:1.6":""}">${x.question||x.q}</p><div class="row" style="margin-bottom:7px"><button class="dark" type="button" onclick="hearDiagQ()">🔊 Hear Problem</button><button class="dark" type="button" onclick="micDiagAns()">🎤 Speak Answer</button></div><input id="diagAns" inputmode="numeric" placeholder="Answer" onkeydown="if(event.key==='Enter'){event.preventDefault();submitDiag()}"><button class="green" style="width:100%;margin-top:7px" onclick="submitDiag()">Submit</button><p id="diagVoiceStatus" style="font-size:12px;color:#687583"></p></div>`;$("#diagAns").focus()}
+function hearDiagQ(){const x=diagItems[diagIndex];if(x)speakText(x.isWordProblem?(x.q||x.question):(toSpeechText(x.question||x.q)+"?"),"#diagVoiceStatus","🔊 Reading the problem...")}
+function micDiagAns(){micToAnswer("#diagAns","#diagVoiceStatus")}
+function submitDiag(){let x=diagItems[diagIndex],a=$("#diagAns").value.trim(),expected=x.answer!==undefined?x.answer:x.a,c=String(a)===String(expected);diagResults.push({grade:x.grade,skill:x.skill,pattern:x.pattern,correct:c});let msg=c?randomFrom(PRAISE):randomFrom(ENCOURAGE);$("#diagBox").innerHTML=`<div style="padding:16px;background:${c?"#e9f7ed":"#fff1e8"};border-radius:12px;text-align:center"><b style="font-size:20px">${c?"✓ ":""}${msg}</b></div>`;speakText(msg,null);diagIndex++;setTimeout(showDiag,900)}
+async function finishDiag(){let p=await(await fetch("/api/diagnostic/placement",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({grade:state.grade,results:diagResults})})).json();$("#diagBox").innerHTML=`<div style="background:#e9f7ed;padding:14px;border-radius:12px"><b>Recommended starting point: Grade ${p.recommendedGrade}</b><p>Confidence: ${Math.round(p.confidence*100)}%</p><p>Mastered sampled skills: ${p.masteredSkills}</p><p><b>Priority gaps:</b> ${(p.priorityGaps||[]).map(x=>`${x.skill} (${Math.round(x.accuracy*100)}%)`).join(", ")||"None identified"}</p><button class="green" onclick="applyPlacement(${p.recommendedGrade})">Apply Placement</button></div>`}
+function applyPlacement(g){state.grade=g;$("#grade").value=g;state.competency=`addition_${g===1?"1x1":g===2?"2x1":"3x1"}`;curriculum().then(newQ);loadMap();$("#chat").textContent=`Placement complete. We'll start at Grade ${g} and adapt from your evidence.`}
+
+function showTrophy({name,accuracy,mastery,competency,grade,mastered}){
+ $("#trophyName").textContent=name;
+ $("#trophySubtitle").textContent=mastered?`You've mastered ${(competency||"").replace(/_/g," ")}! 🎉`:`You completed a full batch of 15 items in ${(competency||"").replace(/_/g," ")}.`;
+ $("#trophyAccuracy").textContent=Math.round((accuracy||0)*100)+"%";
+ $("#trophyMastery").textContent=Math.round((mastery||0)*100)+"%";
+ window._lastCertData={name,accuracy:accuracy||0,mastery:mastery||0,competency,grade,date:new Date()};
+ $("#trophyModal").style.display="flex";
+ speakText(`Congratulations ${name}! You completed 15 items.`,null);
+}
+$("#closeTrophy").onclick=()=>{$("#trophyModal").style.display="none"};
+function buildCertificateNode(d){
+ const compLabel=(d.competency||"").replace(/_/g," ");
+ const dateStr=d.date.toLocaleDateString();
+ const nm=String(d.name||"");
+ const nameSize=nm.length>26?36:nm.length>18?46:64;
+ const wrap=document.createElement("div");
+ wrap.style.cssText="position:fixed;left:-99999px;top:0;width:1000px;height:707px;";
+ wrap.innerHTML=`
+ <div style="width:1000px;height:707px;background:#fff;position:relative;overflow:hidden;font-family:'Nunito',sans-serif;box-sizing:border-box">
+  <img src="/certificate-bg.png" crossorigin="anonymous" style="position:absolute;left:0;top:0;width:1000px;height:707px;display:block;pointer-events:none">
+  <div style="position:relative;z-index:2;width:100%;height:100%">
+   <div style="position:absolute;left:179px;top:58px;width:643px;height:150px;display:flex;align-items:center;justify-content:center;font-family:'Baloo 2',sans-serif;font-weight:800;font-size:58px;color:#202f5a;letter-spacing:1px;text-align:center">CERTIFICATE</div>
+   <div style="position:absolute;left:259px;top:163px;width:482px;height:80px;display:flex;align-items:center;justify-content:center;font-family:'Baloo 2',sans-serif;font-weight:700;font-size:25px;color:#202f5a;letter-spacing:5px;text-align:center">OF ACHIEVEMENT</div>
+   <div style="position:absolute;left:290px;top:248px;width:419px;height:42px;display:flex;align-items:center;justify-content:center;font-family:'Baloo 2',sans-serif;font-weight:700;font-size:15px;color:#2a5f99;letter-spacing:1.5px;text-align:center">THIS AWARD IS PROUDLY PRESENTED TO:</div>
+   <div style="position:absolute;left:100px;top:290px;width:800px;height:138px;display:flex;align-items:center;justify-content:center;font-family:'Caveat',cursive;font-weight:700;font-size:${nameSize}px;color:#b4432d;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(nm)}</div>
+   <div style="position:absolute;left:150px;top:449px;width:700px;height:95px;display:flex;align-items:center;justify-content:center;font-family:'Nunito',sans-serif;font-weight:800;font-size:15px;color:#202f5a;text-align:center;line-height:1.55">For completing 15 practice items in <b>${esc(compLabel)}</b> — Grade ${d.grade}, with ${Math.round(d.accuracy*100)}% accuracy and ${Math.round(d.mastery*100)}% mastery. Keep learning, keep growing, and keep being awesome!</div>
+   <div style="position:absolute;left:0;top:558px;width:1000px;text-align:center">
+    <div style="font-family:'Baloo 2',sans-serif;font-weight:700;font-size:13px;letter-spacing:1.5px;color:#b4432d">DATE</div>
+    <div style="display:inline-block;margin-top:5px;padding-bottom:4px;border-bottom:2px dotted #b4432d;font-family:'Nunito',sans-serif;font-weight:800;font-size:14px;color:#2b3a55;min-width:180px">${esc(dateStr)}</div>
+   </div>
+  </div>
+ </div>`;
+ return wrap;
+}
+$("#downloadCert").onclick=async()=>{
+ const d=window._lastCertData;if(!d)return;
+ if(!window.jspdf||!window.html2canvas){$("#trophySubtitle").textContent="Certificate tool needs an internet connection. Please try again when online.";return}
+ const btn=$("#downloadCert");btn.disabled=true;const origLabel=btn.textContent;btn.textContent="Preparing certificate...";
+ try{
+  const node=buildCertificateNode(d);
+  document.body.appendChild(node);
+  const bgImg=node.querySelector("img");
+  if(bgImg&&!bgImg.complete){await new Promise(r=>{bgImg.onload=r;bgImg.onerror=r})}
+  if(document.fonts&&document.fonts.ready)await document.fonts.ready;
+  await new Promise(r=>setTimeout(r,80));
+  const canvas=await html2canvas(node.firstElementChild,{scale:2,backgroundColor:"#ffffff",useCORS:true});
+  document.body.removeChild(node);
+  const img=canvas.toDataURL("image/png");
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:"landscape",unit:"pt",format:"a4"});
+  const W=doc.internal.pageSize.getWidth(),H=doc.internal.pageSize.getHeight();
+  doc.addImage(img,"PNG",0,0,W,H);
+  doc.save(`MathBuddy_Certificate_${d.name.replace(/\s+/g,"_")}_${Date.now()}.pdf`);
+ }catch(e){
+  console.log("[MathBuddy] Certificate generation failed:",e.message);
+  $("#trophySubtitle").textContent="Couldn't generate the certificate. Please try again.";
+ }finally{
+  btn.disabled=false;btn.textContent=origLabel;
+ }
+};
+
+(function initReturningLearner(){
+ if(restoreLearner()&&learner){
+  $("#name").value=learner.name||"";
+  if(learner.grade){state.grade=learner.grade;$("#grade").value=learner.grade}
+  $("#reg").textContent=`✅ Welcome back, ${learner.name} — ID: ${learner.id}`;
+  loadLearnerProfile();
+ }
+})();
+curriculum().then(newQ);render();loadDash();loadMap();teacherDashboard();openQueueDB().then(renderQueue);syncQueue();
+</script></body></html>
