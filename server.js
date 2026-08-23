@@ -1,4 +1,5 @@
 require("dotenv").config();
+const {sheetsAddLearner,sheetsSaveAttempt}=require("./sheets-sync");
 const express=require("express"),path=require("path"),crypto=require("crypto"),sqlite3=require("sqlite3").verbose();
 const app=express(),PORT=process.env.PORT||3000;
 const db=new sqlite3.Database(process.env.DB_PATH||path.join(__dirname,"mathbuddy.db"));
@@ -546,7 +547,7 @@ app.post("/api/voice/session",auth,requireRole("teacher","admin"),(req,res)=>{
 app.get("/api/health",(req,res)=>res.json({status:"ok",version:"11.0",database:"sqlite",time:now()}));
 app.get("/api/curriculum-map",(req,res)=>{let g=Math.max(1,Math.min(10,+req.query.grade||1));res.json(CURRICULUM[`grade_${g}`]||{})});
 app.get("/api/curriculum",(req,res)=>{let g=Math.max(1,Math.min(10,+req.query.grade||1));res.json({grade:g,patterns:PATTERNS(g),competencies:COMP[g],labels:LABEL})});
-app.post("/api/learners",(req,res)=>{let b=req.body||{},learner={id:id(),name:b.name||"Learner",grade:+b.grade||1,section:b.section||"",school:b.school||"",created_at:now()};db.run("INSERT INTO learners VALUES(?,?,?,?,?,?)",Object.values(learner),e=>e?res.status(500).json({error:e.message}):res.json(learner))});
+app.post("/api/learners",(req,res)=>{let b=req.body||{},learner={id:id(),name:b.name||"Learner",grade:+b.grade||1,section:b.section||"",school:b.school||"",created_at:now()};db.run("INSERT INTO learners VALUES(?,?,?,?,?,?)",Object.values(learner),e=>{if(e)return res.status(500).json({error:e.message});sheetsAddLearner(learner);res.json(learner)})});
 // Unauthenticated by design (same trade-off as POST /api/learners above): students look themselves up
 // by name to resume on a new device without a login system. Matches are case-insensitive/trimmed.
 app.get("/api/learners/find",(req,res)=>{
@@ -600,7 +601,7 @@ app.post("/api/attempt",(req,res)=>{let b=req.body||{},clientId=b.clientId||null
  if(clientId){db.get("SELECT client_id FROM sync_receipts WHERE client_id=?",[clientId],(x,hit)=>{if(hit)return res.json({skillState:s,duplicate:true});
   db.run("INSERT INTO sync_receipts(client_id,received_at) VALUES(?,?)",[clientId,now()],()=>saveAttempt())});}else saveAttempt();
  function saveAttempt(){let a=[b.learnerId,b.competency,b.question,String(b.expected),String(b.answer),b.correct?1:0,b.difficulty||1,s.mastery,now()];
- db.run("INSERT INTO attempts(learner_id,competency,question,expected,answer,correct,difficulty,mastery,created_at) VALUES(?,?,?,?,?,?,?,?,?)",a,e=>e?res.status(500).json({error:e.message}):res.json({skillState:s,duplicate:false}))}
+ db.run("INSERT INTO attempts(learner_id,competency,question,expected,answer,correct,difficulty,mastery,created_at) VALUES(?,?,?,?,?,?,?,?,?)",a,e=>{if(e)return res.status(500).json({error:e.message});sheetsSaveAttempt({learnerId:b.learnerId,learnerName:b.learnerName||"",competency:b.competency,question:b.question,expected:String(b.expected),answer:String(b.answer),correct:!!b.correct,difficulty:b.difficulty||1,mastery:s.mastery,created_at:now()});res.json({skillState:s,duplicate:false})})}
 });
 app.post("/api/intervention",(req,res)=>{let b=req.body||{};db.run("INSERT INTO interventions(learner_id,competency,message,misconception,created_at) VALUES(?,?,?,?,?)",[b.learnerId,b.competency,b.message||"",b.misconception||"",now()],e=>e?res.status(500).json({error:e.message}):res.json({ok:true}))});
 app.get("/api/dashboard",(req,res)=>{db.get("SELECT COUNT(*) learners FROM learners",(e,l)=>db.get("SELECT COUNT(*) attempts,SUM(correct) correct,AVG(mastery) mastery FROM attempts",(e2,a)=>db.all("SELECT competency,AVG(mastery) mastery,COUNT(*) attempts FROM attempts GROUP BY competency ORDER BY mastery ASC LIMIT 8",(e3,p)=>res.json({learners:l?.learners||0,attempts:a?.attempts||0,accuracy:a?.attempts?((a.correct||0)/a.attempts):0,averageMastery:a?.mastery||0,prioritySkills:p||[]}))))});
