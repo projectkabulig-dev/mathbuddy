@@ -381,7 +381,8 @@ function extractNumber(t){
  return n!==null?String(n):t;
 }
 let activeMic=null;
-function micToAnswer(inputSel,statusSel,autoSubmit){
+function micToAnswer(inputSel,statusSel,autoSubmit,btnSel,onSubmit){
+ btnSel=btnSel||"#micAns";
  // Toggle: if already listening, stop it
  if(activeMic){try{activeMic.stop()}catch(e){}activeMic=null;return}
  const SR2=window.SpeechRecognition||window.webkitSpeechRecognition;
@@ -390,7 +391,7 @@ function micToAnswer(inputSel,statusSel,autoSubmit){
  activeMic=rec;
  let gotResult=false;
  rec.onstart=()=>{if(statusSel){$(statusSel).textContent="🎤 Listening... tap 🎤 again to stop";$(statusSel).style.color="#28bd60"}
-  $("#micAns").style.background="#28bd60";$("#micAns").textContent="⏹ Stop"};
+  $(btnSel).style.background="#28bd60";$(btnSel).textContent="⏹ Stop"};
  rec.onresult=e=>{
   const t=e.results[e.results.length-1][0].transcript;
   const val=extractNumber(t);$(inputSel).value=val;
@@ -399,13 +400,13 @@ function micToAnswer(inputSel,statusSel,autoSubmit){
   else{if(statusSel)$(statusSel).textContent=`🎤 Hearing: "${t}"...`}
  };
  rec.onerror=e=>{if(statusSel){$(statusSel).textContent=e.error==="not-allowed"?"Mic blocked. Check browser settings.":"Couldn't hear. Tap 🎤 again.";$(statusSel).style.color="#687583"}};
- rec.onend=()=>{activeMic=null;$("#micAns").style.background="";$("#micAns").textContent="🎤 Speak Answer";
-  if(gotResult&&autoSubmit){setTimeout(()=>{if($(inputSel).value.trim())$("#check").click()},300)}
+ rec.onend=()=>{activeMic=null;$(btnSel).style.background="";$(btnSel).textContent="🎤 Speak Answer";
+  if(gotResult&&autoSubmit){setTimeout(()=>{if($(inputSel).value.trim())onSubmit&&onSubmit()},300)}
   else if(!gotResult&&statusSel&&$(statusSel).textContent.includes("Listening")){$(statusSel).textContent="No speech detected. Tap 🎤 and speak clearly.";$(statusSel).style.color="#687583"}};
  try{rec.start()}catch(e){activeMic=null;if(statusSel)$(statusSel).textContent="Could not start mic. Try again."}
 }
 $("#hearQ").onclick=()=>speakText(toSpeechText(state.q?.q)+"?","#exVoiceStatus","🔊 Reading the problem...");
-$("#micAns").onclick=()=>micToAnswer("#answer","#exVoiceStatus",true);
+$("#micAns").onclick=()=>micToAnswer("#answer","#exVoiceStatus",true,"#micAns",()=>$("#check").click());
 
 function setBotState(emotion="idle", text="Ready to learn"){
  const bot=$("#bot"); if(!bot)return;
@@ -515,15 +516,34 @@ async function sendChat(){
 }
 $("#chatSend").onclick=sendChat;
 $("#chatInput").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();sendChat()}});
+let activeChatMic=null;
 $("#chatMic").onclick=()=>{
+ // Toggle: if already listening, stop it — this triggers rec.onend, which sends the message
+ if(activeChatMic){try{activeChatMic.stop()}catch(e){}activeChatMic=null;return}
  const SR2=window.SpeechRecognition||window.webkitSpeechRecognition;
  if(!SR2){$("#chatVoiceStatus").textContent="Speech recognition not supported.";return}
- const rec=new SR2();rec.lang=$("#voiceLang")?.value||"en-PH";rec.interimResults=false;
- rec.onstart=()=>{$("#chatVoiceStatus").textContent="🎤 Listening...";$("#chatMic").style.background="#28bd60"};
- rec.onresult=e=>{const t=e.results[0][0].transcript;$("#chatInput").value=t;$("#chatVoiceStatus").textContent=`Heard: "${t}"`;sendChat()};
- rec.onerror=()=>{$("#chatVoiceStatus").textContent="Couldn't hear that. Try again.";$("#chatMic").style.background=""};
- rec.onend=()=>{$("#chatMic").style.background=""};
- rec.start();
+ const rec=new SR2();rec.lang=$("#voiceLang")?.value||"en-PH";rec.interimResults=true;rec.continuous=true;
+ activeChatMic=rec;
+ let finalText="",gotResult=false;
+ rec.onstart=()=>{$("#chatVoiceStatus").textContent="🎤 Listening... tap 🎤 again to stop";$("#chatVoiceStatus").style.color="#28bd60";$("#chatMic").style.background="#28bd60";$("#chatMic").textContent="⏹"};
+ rec.onresult=e=>{
+  let interim="";
+  for(let i=e.resultIndex;i<e.results.length;i++){
+   if(e.results[i].isFinal){finalText+=e.results[i][0].transcript+" ";gotResult=true}
+   else interim+=e.results[i][0].transcript;
+  }
+  const t=(finalText+interim).trim();
+  $("#chatInput").value=t;
+  $("#chatVoiceStatus").textContent=`🎤 Hearing: "${t}"...`;
+ };
+ rec.onerror=e=>{$("#chatVoiceStatus").textContent=e.error==="not-allowed"?"Mic blocked. Check browser settings.":"Couldn't hear that. Tap 🎤 again.";$("#chatVoiceStatus").style.color="#687583"};
+ rec.onend=()=>{
+  activeChatMic=null;$("#chatMic").style.background="";$("#chatMic").textContent="🎤";
+  const t=$("#chatInput").value.trim();
+  if(gotResult&&t){$("#chatVoiceStatus").textContent=`Heard: "${t}"`;$("#chatVoiceStatus").style.color="#687583";sendChat()}
+  else{$("#chatVoiceStatus").textContent="No speech detected. Tap 🎤 and speak clearly.";$("#chatVoiceStatus").style.color="#687583"}
+ };
+ try{rec.start()}catch(e){activeChatMic=null;$("#chatVoiceStatus").textContent="Could not start mic. Try again."}
 };
 
 
@@ -622,9 +642,9 @@ async function loadDash(){let d=await(await fetch("/api/dashboard")).json();$("#
 
 let diagItems=[],diagIndex=0,diagResults=[];
 $("#runDiag").onclick=async()=>{diagItems=(await(await fetch(`/api/diagnostic/items?grade=10`)).json()).items;diagIndex=0;diagResults=[];showDiag()};
-function showDiag(){if(diagIndex>=diagItems.length){finishDiag();return}let x=diagItems[diagIndex];const isWP=x.isWordProblem;$("#diagBox").innerHTML=`<p style="font-size:12px;font-weight:900;color:#687583;margin:4px 0 0">Item ${diagIndex+1}/${diagItems.length}${isWP?" 📝 Word Problem":""}</p><div class="q" id="diagQ" style="${isWP?"font-size:16px;text-align:left":""}">${x.question||x.q}</div><div class="row" style="margin-bottom:9px"><button class="dark" type="button" onclick="hearDiagQ()">🔊 Hear Problem</button><button class="dark" type="button" onclick="micDiagAns()">🎤 Speak Answer</button></div><input id="diagAns" inputmode="numeric" placeholder="Answer" onkeydown="if(event.key==='Enter'){event.preventDefault();submitDiag()}"><button class="green" style="width:100%;margin-top:9px" onclick="submitDiag()">Submit</button><p id="diagFeedback"></p><p id="diagVoiceStatus" style="font-size:12px;color:#687583"></p>`;$("#diagAns").focus()}
+function showDiag(){if(diagIndex>=diagItems.length){finishDiag();return}let x=diagItems[diagIndex];const isWP=x.isWordProblem;$("#diagBox").innerHTML=`<p style="font-size:12px;font-weight:900;color:#687583;margin:4px 0 0">Item ${diagIndex+1}/${diagItems.length}${isWP?" 📝 Word Problem":""}</p><div class="q" id="diagQ" style="${isWP?"font-size:16px;text-align:left":""}">${x.question||x.q}</div><div class="row" style="margin-bottom:9px"><button class="dark" type="button" onclick="hearDiagQ()">🔊 Hear Problem</button><button class="dark" type="button" id="micDiagBtn" onclick="micDiagAns()">🎤 Speak Answer</button></div><input id="diagAns" inputmode="numeric" placeholder="Answer" onkeydown="if(event.key==='Enter'){event.preventDefault();submitDiag()}"><button class="green" style="width:100%;margin-top:9px" onclick="submitDiag()">Submit</button><p id="diagFeedback"></p><p id="diagVoiceStatus" style="font-size:12px;color:#687583"></p>`;$("#diagAns").focus()}
 function hearDiagQ(){const x=diagItems[diagIndex];if(x)speakText(x.isWordProblem?(x.q||x.question):(toSpeechText(x.question||x.q)+"?"),"#diagVoiceStatus","🔊 Reading the problem...")}
-function micDiagAns(){micToAnswer("#diagAns","#diagVoiceStatus")}
+function micDiagAns(){micToAnswer("#diagAns","#diagVoiceStatus",true,"#micDiagBtn",()=>submitDiag())}
 function submitDiag(){let x=diagItems[diagIndex],a=$("#diagAns").value.trim(),expected=x.answer!==undefined?x.answer:x.a,c=String(a)===String(expected);diagResults.push({grade:x.grade,skill:x.skill,pattern:x.pattern,correct:c});let msg=c?randomFrom(PRAISE):randomFrom(ENCOURAGE);$("#diagFeedback").textContent=c?`✓ ${msg}`:msg;speakText(msg,null);diagIndex++;setTimeout(showDiag,900)}
 async function finishDiag(){let p=await(await fetch("/api/diagnostic/placement",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({grade:state.grade,results:diagResults})})).json();$("#diagBox").innerHTML=`<div style="background:#e9f7ed;padding:14px;border-radius:12px"><b>Recommended starting point: Grade ${p.recommendedGrade}</b><p>Confidence: ${Math.round(p.confidence*100)}%</p><p>Mastered sampled skills: ${p.masteredSkills}</p><p><b>Priority gaps:</b> ${(p.priorityGaps||[]).map(x=>`${x.skill} (${Math.round(x.accuracy*100)}%)`).join(", ")||"None identified"}</p><button class="green" onclick="applyPlacement(${p.recommendedGrade})">Apply Placement</button></div>`}
 function applyPlacement(g){state.grade=g;$("#grade").value=g;state.competency=`addition_${g===1?"1x1":g===2?"2x1":"3x1"}`;curriculum().then(newQ);loadMap();$("#chat").textContent=`Placement complete. We'll start at Grade ${g} and adapt from your evidence.`}
