@@ -160,23 +160,36 @@ app.post("/api/conversation",async(req,res)=>{
  function smartFallback(){
   const msg=(b.message||"").toLowerCase().trim();
   const q=b.question||"",exp=b.expected||"";
-  // If the learner wrote an equation ending in "= <number>" (e.g. "5 + 3 = 8"), treat the
-  // number after "=" as their STATED ANSWER to the current problem and compare it to the
-  // real expected answer — instead of re-solving the expression from scratch, which would
-  // ignore whatever they actually wrote after "=" and never congratulate a correct answer.
-  if(msg.includes("=") && exp!==""){
-   const statedRaw=msg.split("=").pop().trim();
-   const statedMatch=statedRaw.match(/-?\d+(\.\d+)?/);
-   if(statedMatch){
-    const stated=statedMatch[0];
-    if(String(stated)===String(exp).trim()){
-     return {reply:`Yes! ${stated} is correct! Great job! Try the next problem.`,emotion:"celebrate",speech:`Yes, ${stated} is correct! Great job!`,hint:"",nextQuestion:"Try the next problem!"}
-    }else{
-     return {reply:`Not quite — the answer to ${q} is ${exp}. Let's try the next one!`,emotion:"encourage",speech:`The answer is ${exp}. Don't worry, let's try the next one!`,hint:`The answer is ${exp}.`,nextQuestion:"Try again!"}
-    }
-   }
+  
+  // FIRST: Check if asking for explanation/steps/teaching — prioritize over computing
+  const wantsSteps=/step|how do|how to|how will|how can|teach|explain|show me|why|process|method|way to/i.test(msg);
+  
+  // Extract any two numbers from the message for teaching examples
+  const nums=msg.match(/\d+/g);
+  const a=nums?+nums[0]:0,c=nums&&nums[1]?+nums[1]:0;
+  
+  if(wantsSteps&&msg.match(/add|plus|sum|total|combin/i)&&a&&c){
+   return {reply:`Great question! Here's how to add ${a} + ${c} step by step:\n1. Start with the bigger number: ${Math.max(a,c)}\n2. Count up ${Math.min(a,c)} more: ${Array.from({length:Math.min(a,c)},(_,i)=>Math.max(a,c)+i+1).join(", ")}\n3. You land on ${a+c}!\nSo ${a} + ${c} = ${a+c}`,emotion:"encourage",speech:`To add ${a} plus ${c}, start with ${Math.max(a,c)} and count up ${Math.min(a,c)} more. You get ${a+c}!`,hint:`Start with ${Math.max(a,c)} and count up.`,nextQuestion:"Try it yourself!"}
   }
-  // Try to detect and compute math expressions in the message
+  if(wantsSteps&&msg.match(/subtract|minus|take away|less/i)&&a&&c){
+   const big=Math.max(a,c),small=Math.min(a,c);
+   return {reply:`Here's how to subtract ${big} - ${small} step by step:\n1. Start with ${big}\n2. Count down ${small}: ${Array.from({length:small},(_,i)=>big-i-1).join(", ")}\n3. You land on ${big-small}!\nSo ${big} - ${small} = ${big-small}`,emotion:"encourage",speech:`To subtract, start with ${big} and count down ${small}. You get ${big-small}!`,hint:`Start with ${big} and count down.`,nextQuestion:"Try it!"}
+  }
+  if(wantsSteps&&msg.match(/multipl|times|groups/i)&&a&&c){
+   const groups=Math.min(a,c),each=Math.max(a,c);
+   return {reply:`Here's how to multiply ${a} × ${c} step by step:\n1. Think of it as ${groups} groups of ${each}\n2. Add them: ${Array(groups).fill(each).join(" + ")} = ${a*c}\nSo ${a} × ${c} = ${a*c}`,emotion:"encourage",speech:`${a} times ${c} means ${groups} groups of ${each}. Add them together to get ${a*c}!`,hint:"Think of it as groups.",nextQuestion:"Try it!"}
+  }
+  if(wantsSteps&&msg.match(/divid|share|split/i)&&a&&c){
+   const ans=c!==0?a/c:0;const isWhole=Number.isInteger(ans);
+   return {reply:`Here's how to divide ${a} ÷ ${c} step by step:\n1. Think: how many groups of ${c} fit into ${a}?\n2. Count: ${Array.from({length:Math.floor(ans)},(_,i)=>c*(i+1)).join(", ")}\n3. ${c} fits into ${a} exactly ${isWhole?ans:ans.toFixed(1)} times!\nSo ${a} ÷ ${c} = ${isWhole?ans:ans.toFixed(1)}`,emotion:"encourage",speech:`Divide ${a} by ${c}. How many groups of ${c} fit into ${a}? The answer is ${isWhole?ans:ans.toFixed(1)}!`,hint:`How many groups of ${c} fit into ${a}?`,nextQuestion:"Try it!"}
+  }
+  // Generic "how/why/explain" without specific numbers
+  if(wantsSteps&&!a){
+   const tips=["Break the problem into smaller parts. Start with what you know!","Use your fingers or draw circles to count. One step at a time!","Think about real objects — like sharing candies with friends!","Start with the bigger number, then count up or down from there."];
+   return {reply:tips[Math.floor(Math.random()*tips.length)],emotion:"encourage",speech:tips[Math.floor(Math.random()*tips.length)],hint:"Try the problem step by step.",nextQuestion:""}
+  }
+
+  // THEN: Direct math computation (only if NOT asking for steps)
   const mathMatch=msg.match(/(?:what(?:'s| is)\s+)?(\d+)\s*([+\-×x*÷/])\s*(\d+)/);
   if(mathMatch){
    const a=+mathMatch[1],op=mathMatch[2],c=+mathMatch[3];
@@ -589,7 +602,7 @@ app.post("/api/voice/session",auth,requireRole("teacher","admin"),(req,res)=>{
   note:"Audio is processed client-side in this foundation; persistent audio storage is disabled."
  });
 });
-app.get("/api/health",(req,res)=>res.json({status:"ok",version:"11.0",database:"sqlite",time:now(),aiConfigured:!!AI_KEY,aiModel:AI_MODEL}));
+app.get("/api/health",(req,res)=>res.json({status:"ok",version:"11.0",database:"sqlite",time:now()}));
 app.get("/api/curriculum-map",(req,res)=>{let g=Math.max(1,Math.min(10,+req.query.grade||1));res.json(CURRICULUM[`grade_${g}`]||{})});
 app.get("/api/curriculum",(req,res)=>{let g=Math.max(1,Math.min(10,+req.query.grade||1));res.json({grade:g,patterns:PATTERNS(g),competencies:COMP[g],labels:LABEL})});
 app.post("/api/learners",(req,res)=>{let b=req.body||{},learner={id:id(),name:b.name||"Learner",grade:+b.grade||1,section:b.section||"",school:b.school||"",created_at:now()};db.run("INSERT INTO learners VALUES(?,?,?,?,?,?)",Object.values(learner),e=>{if(e)return res.status(500).json({error:e.message});sheetsAddLearner(learner);res.json(learner)})});
