@@ -1,747 +1,657 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>MathBuddy V11</title>
-<style>body{margin:0;font-family:system-ui;background:#e6f0eb;color:#10213a}.top{background:#071a33;color:#fff;padding:15px 20px;font-weight:900}.main{max-width:1050px;margin:auto;padding:18px}.card{background:#fff;padding:18px;border-radius:18px;margin-bottom:14px;box-shadow:0 8px 25px #173d2a14}.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.row{display:grid;grid-template-columns:1fr 1fr;gap:9px}input,select{width:100%;padding:12px;border:1px solid #ccd8d3;border-radius:10px;box-sizing:border-box}button{padding:12px;border:0;border-radius:10px;font-weight:900;cursor:pointer}.green{background:#28bd60;color:#fff}.dark{background:#071a33;color:#fff}.q{font-size:42px;font-weight:900;text-align:center;padding:25px}.robot{text-align:center;background:#fff}.robot b{font-size:75px}.comp{padding:10px;background:#eef2f0;border-radius:10px;margin:6px 0;cursor:pointer}.active{outline:2px solid #28bd60}.metric{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.metric div{background:#eef2f0;padding:10px;border-radius:10px}.metric b{font-size:20px;display:block}.bar{height:8px;background:#dbe4e0;border-radius:20px}.fill{height:100%;background:#28bd60;border-radius:20px}@media(max-width:800px){.grid{grid-template-columns:1fr}}</style>
-<style>
-.bot{width:190px;margin:4px auto 0;position:relative;transition:.25s;transform-origin:center bottom;filter:drop-shadow(0 14px 18px rgba(10,30,25,.22))}
-.bot img{display:block;width:100%;height:auto}
-.bot.idle{animation:float 3s ease-in-out infinite}
-.bot.think{animation:think .8s ease-in-out infinite alternate}
-.bot.encourage{animation:bounce .55s ease-in-out 2}
-.bot.celebrate{animation:celebrate .65s ease-in-out 2}
-.bot.speaking{animation:speak 0.4s ease-in-out infinite alternate}
-.bot.happy{animation:celebrate .65s ease-in-out 2}
-@keyframes float{50%{transform:translateY(-6px)}}
-@keyframes think{to{transform:rotate(3deg) translateY(-3px)}}
-@keyframes bounce{50%{transform:translateY(-18px)}}
-@keyframes celebrate{25%{transform:rotate(-7deg) translateY(-8px)}75%{transform:rotate(7deg) translateY(-8px)}}
-@keyframes speak{to{transform:scale(1.03) translateY(-2px)}}
-.msg{padding:8px 12px;border-radius:12px;margin-bottom:6px;line-height:1.5;max-width:92%;word-wrap:break-word}
-.bot-msg{background:#e3f0ff;color:#0d1f38;border-bottom-left-radius:4px}
-.user-msg{background:#071a33;color:#fff;margin-left:auto;border-bottom-right-radius:4px;text-align:right}
-.typing-msg{background:#e3f0ff;color:#687583;font-style:italic;border-bottom-left-radius:4px}
-.state{font-size:12px;font-weight:900;letter-spacing:.3px}
-</style>
-<link rel="manifest" href="/manifest.webmanifest"><script>if("serviceWorker" in navigator)navigator.serviceWorker.register("/sw.js");</script><script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Caveat:wght@700&family=Nunito:wght@600;800&display=swap" rel="stylesheet"></head>
-<body><header class="top">🤖 MathBuddy <span style="font-weight:400;font-size:12px;opacity:.75;margin-left:6px">Project KABULIG · Developed by Sir Dyon</span><span style="float:right;font-size:12px;font-weight:400;opacity:.7">SDO Romblon</span></header><main class="main">
-<div class="card"><div class="row"><div><label for="name" style="display:block;font-weight:900;font-size:12px;margin-bottom:5px;color:#425466">Name of the Student</label><input id="name" placeholder="Full name (e.g., Juan Dela Cruz)"></div><div><label for="grade" style="display:block;font-weight:900;font-size:12px;margin-bottom:5px;color:#425466">Grade Level</label><select id="grade"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select></div></div><div class="row" style="margin-top:6px"><div><label for="district" style="display:block;font-weight:900;font-size:12px;margin-bottom:5px;color:#425466">Municipality</label><select id="district"><option value="">-- Select Municipality --</option><option>Alcantara</option><option>Banton</option><option>Cajidiocan</option><option>Calatrava</option><option>Concepcion</option><option>Corcuera</option><option>Ferrol</option><option>Looc</option><option>Magdiwang</option><option>Odiongan</option><option>Romblon</option><option>San Agustin</option><option>San Andres</option><option>San Fernando</option><option>San Jose</option><option>Santa Fe</option><option>Santa Maria</option></select></div></div><button class="dark" id="register" style="margin-top:9px;width:100%">Start / Continue Learning</button><p style="font-size:11px;color:#687583;margin:6px 0 0">Type the exact name you used before to resume your progress on any device — even a new one.</p><div id="reg"></div></div>
-<div class="grid"><section><div class="card robot">
-  <div id="bot" class="bot idle" aria-label="MathBuddy animated tutor">
-    <img src="/mathbuddy-mascot.png" alt="MathBuddy" style="width:190px;height:auto;pointer-events:none">
-  </div>
-  <div class="state" id="botState">Ready to learn</div>
-  <div id="chatBox" style="margin-top:10px;border-top:1px solid #d7e3dd;padding-top:10px;text-align:left">
-    <div style="font-weight:900;font-size:13px;margin-bottom:6px">💬 Talk to MathBuddy</div>
-    <div id="chatHistory" style="max-height:400px;overflow-y:auto;padding:8px;background:#f4f8f6;border-radius:12px;margin-bottom:8px;font-size:13px">
-      <div class="msg bot-msg">Hello! I'm MathBuddy. Ask me anything about math — like "How do I add 24 + 38?" or "Paano mag-divide?" 😊</div>
-    </div>
-    <div style="display:flex;gap:6px">
-      <input id="chatInput" placeholder="Ask MathBuddy a question..." style="flex:1;padding:10px;border:1px solid #ccd8d3;border-radius:10px;font-size:13px">
-      <button class="dark" id="chatMic" type="button" style="padding:10px 14px;font-size:16px" title="Speak your question">🎤</button>
-      <button class="green" id="chatSend" type="button" style="padding:10px 16px">Send</button>
-    </div>
-    <p id="chatVoiceStatus" style="font-size:11px;color:#687583;margin:4px 0 0"></p>
-  </div>
-  <div style="margin-top:14px;padding-top:14px;border-top:1px solid #d7e3dd;text-align:left">
-    <div style="font-weight:900;font-size:13px;margin-bottom:8px">🎙️ Voice Settings</div>
-    <label style="display:flex;align-items:center;gap:8px;margin-bottom:10px;cursor:pointer;font-size:13px;font-weight:700">
-      <input type="checkbox" id="voiceEnabled" checked style="width:18px;height:18px;accent-color:#28bd60">
-      AI Voice On/Off
-      <span id="voiceOnOff" style="font-weight:400;color:#687583">🔊 On</span>
-    </label>
-    <select id="voiceLang" style="margin-bottom:8px">
-      <option value="en-PH">English (Philippines)</option>
-      <option value="fil-PH">Filipino</option>
-    </select>
-    <select id="voiceGender" style="margin-bottom:8px">
-      <option value="tara">🌟 Tara (Natural Female)</option>
-      <option value="leah">🌟 Leah (Natural Female)</option>
-      <option value="jess">🌟 Jess (Natural Female)</option>
-      <option value="mia">🌟 Mia (Natural Female)</option>
-      <option value="zoe">🌟 Zoe (Natural Female)</option>
-      <option value="leo">🌟 Leo (Natural Male)</option>
-      <option value="dan">🌟 Dan (Natural Male)</option>
-      <option value="zac">🌟 Zac (Natural Male)</option>
-      <option value="browser-female">📱 Browser Female (offline)</option>
-      <option value="browser-male">📱 Browser Male (offline)</option>
-    </select>
-    <select id="voicePick" style="margin-bottom:8px"><option value="">Auto (best for selected type)</option></select>
-  </div>
-</div><div class="card"><h3>Competencies</h3><div id="comps"></div></div><div class="card"><h3>Learner Model</h3><div class="metric"><div><b id="mastery">50%</b>Mastery</div><div><b id="accuracy">0%</b>Accuracy</div><div><b id="level">1</b>Level</div></div><div class="bar" style="margin-top:10px"><div class="fill" id="fill" style="width:50%"></div></div></div></section>
-<section><div class="card"><b id="title">Addition</b><p id="levelInfo" style="font-size:12px;font-weight:900;color:#687583;margin:4px 0 0">Level 1 · Item 1/10</p><div class="q" id="q">?</div><div class="row" style="margin-bottom:9px"><button class="dark" id="hearQ" type="button">🔊 Hear Problem</button><button class="dark" id="micAns" type="button">🎤 Speak Answer</button></div><input id="answer" inputmode="numeric" placeholder="Answer"><button class="green" id="check" style="width:100%;margin-top:9px">Check Answer</button><p id="feedback"></p><p id="exVoiceStatus" style="font-size:12px;color:#687583"></p></div><div class="card"><h3>🧭 Adaptive Diagnostic & Placement</h3><p style="font-size:12px;color:#687583">The diagnostic samples skills and identifies priority gaps. Placement is evidence-based and should be validated before formal assessment use.</p><button class="dark" id="runDiag" style="width:100%">Start Diagnostic</button><div id="diagBox" style="margin-top:10px"></div></div><div class="card"><h3>📚 Curriculum Mapping</h3><p style="font-size:12px;color:#687583">Routing layer: Grade → Domain → Competency → Skill. The included map is a prototype and must be validated against the current official DepEd curriculum before instructional deployment.</p><div id="curriculumMap">Loading...</div></div><div class="card"><h3>Teacher Dashboard Snapshot</h3><div id="dash">Loading...</div></div></section></div></main>
-<footer style="text-align:center;padding:18px 20px;background:#071a33;color:#fff;font-size:12px;margin-top:10px">
-<div style="font-weight:900;font-size:14px;margin-bottom:4px">🤖 MathBuddy — Project KABULIG</div>
-<div style="opacity:.7">Developed by Sir Dyon · Education Program Supervisor I (Mathematics) · SDO Romblon</div>
-</footer>
-<div id="trophyModal" style="display:none;position:fixed;inset:0;background:rgba(7,26,51,.55);z-index:999;align-items:center;justify-content:center;padding:16px">
- <div style="background:#fff;border-radius:18px;max-width:420px;width:100%;padding:26px;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.28)">
-  <div style="font-size:60px;line-height:1">🏆</div>
-  <h2 style="margin:10px 0 4px">Great job, <span id="trophyName">Learner</span>!</h2>
-  <p id="trophySubtitle" style="color:#425466;font-size:13px;margin:0 0 14px">You completed a full set of 15 items.</p>
-  <div class="metric" style="margin-bottom:16px">
-   <div><b id="trophyAccuracy">0%</b>Accuracy</div>
-   <div><b id="trophyMastery">0%</b>Mastery</div>
-   <div><b>15</b>Items</div>
-  </div>
-  <button class="green" id="downloadCert" type="button" style="width:100%;margin-bottom:8px">📄 Download Certificate (PDF)</button>
-  <button class="dark" id="closeTrophy" type="button" style="width:100%">Continue Learning</button>
- </div>
-</div>
-<script>
-function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+require("dotenv").config();
+const {sheetsAddLearner,sheetsSaveAttempt}=require("./sheets-sync");
+const express=require("express"),path=require("path"),crypto=require("crypto"),sqlite3=require("sqlite3").verbose();
+const app=express(),PORT=process.env.PORT||3000;
+const db=new sqlite3.Database(process.env.DB_PATH||path.join(__dirname,"mathbuddy.db"));
+const AI_URL=process.env.AI_URL||"https://api.groq.com/openai/v1/chat/completions",AI_KEY=process.env.AI_KEY||"",AI_MODEL=process.env.AI_MODEL||"llama-3.3-70b-versatile";
+app.use(express.json({limit:"2mb"}));app.use(express.static(path.join(__dirname,"public")));
+db.serialize(()=>{db.run(`CREATE TABLE IF NOT EXISTS learners(id TEXT PRIMARY KEY,name TEXT,grade INTEGER,section TEXT,school TEXT,created_at TEXT)`);
+db.run(`CREATE TABLE IF NOT EXISTS attempts(id INTEGER PRIMARY KEY AUTOINCREMENT,learner_id TEXT,competency TEXT,question TEXT,expected TEXT,answer TEXT,correct INTEGER,difficulty INTEGER,mastery REAL,created_at TEXT)`);
+db.run(`CREATE TABLE IF NOT EXISTS interventions(id INTEGER PRIMARY KEY AUTOINCREMENT,learner_id TEXT,competency TEXT,message TEXT,misconception TEXT,created_at TEXT)`);
+db.run(`CREATE TABLE IF NOT EXISTS sync_receipts(client_id TEXT PRIMARY KEY,received_at TEXT)`);
 
-async function teacherDashboard(){
- const res=await fetch("/api/teacher/class",{headers:authHeaders()});
- if(!res.ok)return;
- const rows=await res.json();
- if(!Array.isArray(rows))return;
- const valid=rows.filter(x=>x.attempts);
- const avg=valid.length?valid.reduce((a,x)=>a+x.mastery,0)/valid.length:0;
- const risk=rows.filter(x=>x.status==="AT RISK").length;
- $("#teacherSummary").innerHTML=`<div class="metric"><div><b>${rows.length}</b>Learners</div><div><b>${Math.round(avg*100)}%</b>Avg Mastery</div><div><b>${risk}</b>At Risk</div></div>`;
- $("#classRows").innerHTML=rows.map(x=>`<tr><td style="padding:8px">${esc(x.name)}</td><td style="text-align:center">${x.attempts}</td><td style="text-align:center">${Math.round(x.accuracy*100)}%</td><td style="text-align:center">${Math.round(x.mastery*100)}%</td><td style="text-align:center"><span style="font-weight:900">${x.status}</span></td></tr>`).join("")||`<tr><td colspan="5" style="padding:12px">No learners registered yet.</td></tr>`;
- const iv=await(await fetch("/api/teacher/interventions",{headers:authHeaders()})).json();
- $("#interventions").innerHTML=iv.map(x=>`<div style="background:#eef2f0;padding:10px;border-radius:10px;margin:6px 0"><b>${x.competency}</b> · error rate ${Math.round(x.error_rate*100)}%<br><span style="font-size:11px">${x.recommendation.action}: ${x.recommendation.steps.join(" → ")}</span></div>`).join("")||"No intervention data yet.";
+
+db.run(`CREATE TABLE IF NOT EXISTS divisions(id TEXT PRIMARY KEY,name TEXT,created_at TEXT)`);
+db.run(`CREATE TABLE IF NOT EXISTS schools(id TEXT PRIMARY KEY,division_id TEXT,name TEXT,created_at TEXT)`);
+db.run(`CREATE TABLE IF NOT EXISTS teacher_schools(username TEXT,school_id TEXT,role TEXT,PRIMARY KEY(username,school_id))`);
+db.run(`CREATE TABLE IF NOT EXISTS classes(id TEXT PRIMARY KEY,name TEXT,grade INTEGER,section TEXT,teacher_username TEXT,created_at TEXT)`);
+db.run(`CREATE TABLE IF NOT EXISTS enrollments(class_id TEXT,learner_id TEXT,enrolled_at TEXT,PRIMARY KEY(class_id,learner_id))`);
+db.run(`CREATE TABLE IF NOT EXISTS audit_log(id INTEGER PRIMARY KEY AUTOINCREMENT,actor TEXT,role TEXT,action TEXT,target TEXT,details TEXT,created_at TEXT)`);
+db.run(`CREATE TABLE IF NOT EXISTS data_requests(id INTEGER PRIMARY KEY AUTOINCREMENT,requester TEXT,request_type TEXT,target TEXT,status TEXT,created_at TEXT)`);});
+
+const PATTERNS=g=>g===1?["1x1"]:g===2?["1x1","2x1","2x2"]:["1x1","2x1","2x2","3x1","3x2","3x3"];
+const COMP={1:["addition_1x1","subtraction_1x1","multiplication_1x1","division_1x1"],2:["addition_2x1","subtraction_2x1","multiplication_2x1","division_2x1","addition_2x2","subtraction_2x2","multiplication_2x2","division_2x2"],3:["addition_3x1","subtraction_3x1","multiplication_3x1","division_3x1","addition_3x2","subtraction_3x2","multiplication_3x2","division_3x2","addition_3x3","subtraction_3x3","multiplication_3x3","division_3x3"],4:["multi_digit_operations","factors_multiples","equivalent_fractions","compare_fractions","fraction_operations"],5:["multi_digit_operations","factors_multiples","patterns","fraction_operations","decimal_fractions"],6:["integers","ratio_intro","operations","fraction_operations","decimals"],7:["rational_numbers","algebraic_expressions","rational_operations","linear_equations"],8:["exponents","linear_equations","algebraic_reasoning"],9:["polynomials","quadratic_intro","rational_expressions"],10:["quadratic_equations","functions","statistics"]};
+const LABEL={addition:"Addition",subtraction:"Subtraction",multiplication:"Multiplication",division:"Division",multi_digit_operations:"Multi-Digit Operations",factors_multiples:"Factors & Multiples",equivalent_fractions:"Equivalent Fractions",compare_fractions:"Compare Fractions",fraction_operations:"Fraction Operations",decimal_fractions:"Fractions & Decimals",patterns:"Number Patterns",integers:"Integers",ratio_intro:"Ratio",operations:"Operations",decimals:"Decimals",rational_numbers:"Rational Numbers",rational_operations:"Rational Operations",algebraic_expressions:"Algebraic Expressions",linear_equations:"Linear Equations",exponents:"Exponents",algebraic_reasoning:"Algebraic Reasoning",polynomials:"Polynomials",quadratic_intro:"Quadratic Introduction",rational_expressions:"Rational Expressions",quadratic_equations:"Quadratic Equations",functions:"Functions",statistics:"Statistics"};
+const now=()=>new Date().toISOString(),id=()=>crypto.randomUUID();
+const CURRICULUM=JSON.parse(require("fs").readFileSync(path.join(__dirname,"curriculum","curriculum_map.json"),"utf8"));
+const DIAG_BANK=JSON.parse(require("fs").readFileSync(path.join(__dirname,"diagnostic","diagnostic_bank_seed.json"),"utf8"));
+const {place}=require("./diagnostic/placement");
+const nd=d=>d===1?Math.floor(Math.random()*9)+1:d===2?Math.floor(Math.random()*90)+10:Math.floor(Math.random()*900)+100;
+function make(op,pat){let [a,b]=pat.split("x").map(Number),x=nd(a),y=nd(b),q,ans;if(op==="addition"){q=`${x} + ${y}`;ans=x+y}if(op==="subtraction"){if(x<y)[x,y]=[y,x];q=`${x} − ${y}`;ans=x-y}if(op==="multiplication"){q=`${x} × ${y}`;ans=x*y}if(op==="division"){let d=nd(b),z=nd(Math.max(1,a));q=`${d*z} ÷ ${d}`;ans=z}return{q,a:ans,pattern:pat,operation:op}}
+
+const WP_NAMES=["Maria","Juan","Liza","Carlo","Ana","Miguel","Sofia","Marco","Rosa","Luis","Bea","Jose","Ella","Rico","Nina"];
+const WP_OBJECTS={addition:["mangoes","candies","books","pencils","stickers","stars","shells","marbles","coins","flowers"],subtraction:["mangoes","candies","books","pencils","apples","cookies","stamps","crayons","balloons","ribbons"],multiplication:["bags","boxes","packs","rows","groups","plates","trays","bundles","sets","baskets"],division:["friends","groups","bags","boxes","plates","students","teams","baskets","jars","envelopes"]};
+const WP_PLACES=["the sari-sari store","school","the park","the market","the barangay hall","the library","home","the playground"];
+
+function makeWordProblem(op,pat){
+ const [da,db]=pat.split("x").map(Number);
+ const daCap=Math.min(da,2),dbCap=Math.min(db,1);
+ let a=nd(daCap),b=nd(dbCap);
+ const name1=WP_NAMES[Math.floor(Math.random()*WP_NAMES.length)];
+ let name2=WP_NAMES[Math.floor(Math.random()*WP_NAMES.length)];
+ while(name2===name1)name2=WP_NAMES[Math.floor(Math.random()*WP_NAMES.length)];
+ const objs=(WP_OBJECTS[op]||WP_OBJECTS.addition);
+ const obj=objs[Math.floor(Math.random()*objs.length)];
+ const place=WP_PLACES[Math.floor(Math.random()*WP_PLACES.length)];
+ let q,ans;
+
+ if(op==="addition"){
+  const templates=[
+   `${name1} has ${a} ${obj}. ${name2} gives ${name1} ${b} more. How many ${obj} does ${name1} have now?`,
+   `There are ${a} ${obj} on the table at ${place}. ${name1} puts ${b} more. How many ${obj} are there in all?`,
+   `${name1} picked ${a} ${obj} in the morning and ${b} ${obj} in the afternoon. How many ${obj} did ${name1} pick altogether?`
+  ];
+  q=templates[Math.floor(Math.random()*templates.length)];
+  ans=a+b;
+ }
+ else if(op==="subtraction"){
+  if(a<b)[a,b]=[b,a];
+  const templates=[
+   `${name1} has ${a} ${obj}. ${name1} gives ${b} to ${name2}. How many ${obj} does ${name1} have left?`,
+   `There are ${a} ${obj} at ${place}. ${b} are taken away. How many ${obj} are left?`,
+   `${name1} had ${a} ${obj} but lost ${b} on the way to ${place}. How many ${obj} does ${name1} have now?`
+  ];
+  q=templates[Math.floor(Math.random()*templates.length)];
+  ans=a-b;
+ }
+ else if(op==="multiplication"){
+  a=Math.floor(Math.random()*8)+2; b=Math.floor(Math.random()*8)+2;
+  const templates=[
+   `${name1} has ${a} ${obj} of ${obj==="bags"?"mangoes":"candies"}. Each ${obj.slice(0,-1)} has ${b} inside. How many are there in all?`,
+   `There are ${a} ${obj} at ${place}. Each one has ${b} items. How many items are there in total?`,
+   `${name1} arranged ${obj} in ${a} rows with ${b} in each row. How many are there altogether?`
+  ];
+  q=templates[Math.floor(Math.random()*templates.length)];
+  ans=a*b;
+ }
+ else if(op==="division"){
+  b=Math.floor(Math.random()*8)+2; const whole=Math.floor(Math.random()*8)+2; a=b*whole;
+  const templates=[
+   `${name1} has ${a} ${obj==="friends"?"candies":obj} to share equally among ${b} friends. How many does each friend get?`,
+   `There are ${a} items at ${place}. They need to be packed equally into ${b} ${obj}. How many items go in each?`,
+   `${name1} divides ${a} stickers equally among ${b} ${obj}. How many stickers are in each?`
+  ];
+  q=templates[Math.floor(Math.random()*templates.length)];
+  ans=whole;
+ }
+ return{q,a:ans,pattern:pat,operation:op,isWordProblem:true}
 }
+function update(s,c){s.attempts=(s.attempts||0)+1;s.correct=(s.correct||0)+(c?1:0);s.recent=s.recent||[];s.recent.push(c?1:0);if(s.recent.length>12)s.recent.shift();let raw=s.recent.reduce((a,b)=>a+b,0)/s.recent.length;let prior=s.mastery==null?.5:s.mastery;s.mastery=Math.max(0,Math.min(1,prior*.75+raw*.25));return s}
 
+function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function randomizeDiagItem(item){
+ const x={...item};
+ if(x.pattern&&/^\d+x\d+$/.test(x.pattern)){
+  const [da,db]=x.pattern.split("x").map(Number);
+  const daCap=Math.min(da,2),dbCap=Math.min(db,1);
+  let a=nd(daCap),b=nd(dbCap);
+  if(x.skill&&x.skill.includes("subtraction")&&a<b)[a,b]=[b,a];
+  if(x.skill&&x.skill.includes("division")){b=Math.floor(Math.random()*8)+2;a=b*(Math.floor(Math.random()*10)+2)}
+  if(x.skill&&x.skill.includes("multiplication")){a=nd(1);b=nd(1)}
+  const ops={addition:{sym:"+",ans:a+b},subtraction:{sym:"−",ans:a-b},multiplication:{sym:"×",ans:a*b},division:{sym:"÷",ans:a/b}};
+  const op=Object.keys(ops).find(k=>x.skill&&x.skill.includes(k));
+  if(op){x.question=`${a} ${ops[op].sym} ${b}`;x.answer=ops[op].ans}
+ }
+ return x;
+}
+app.get("/api/diagnostic/items",(req,res)=>{
+ let g=Math.max(1,Math.min(10,+req.query.grade||1));
+ let bank=shuffle(DIAG_BANK.items.filter(x=>x.grade<=g));
+ const seen=new Set(),out=[];
+ for(const x of bank){if(!seen.has(x.skill)){out.push(x);seen.add(x.skill)}}
+ for(const x of bank){if(out.length>=12)break;if(!out.includes(x))out.push(x)}
+ const compItems=shuffle(out.slice(0,12)).map(randomizeDiagItem);
+ const ops=["addition","subtraction","multiplication","division"];
+ const pat=g===1?"1x1":g===2?"2x1":"2x2";
+ const wpItems=[0,1,2].map(()=>{const op=ops[Math.floor(Math.random()*ops.length)];const wp=makeWordProblem(op,pat);return{...wp,grade:g,skill:`${op}_wp`}});
+ const items=[];
+ for(let i=0;i<15;i++){
+  if(i===4||i===9||i===14){items.push(wpItems.shift())}
+  else if(compItems.length){items.push(compItems.shift())}
+ }
+ res.json({grade:g,count:items.length,items});
+});
+app.post("/api/diagnostic/placement",(req,res)=>{
+ const b=req.body||{},results=Array.isArray(b.results)?b.results:[];
+ res.json(place(results,CURRICULUM));
+});
 
+function interventionFor(skill,accuracy){
+ if(accuracy<.35)return {priority:"HIGH",action:"Intensive scaffold",steps:["Use concrete/visual representation","Model one worked example","Ask learner to explain each step","Retry with a simpler item"],duration:"10-15 min"};
+ if(accuracy<.6)return {priority:"MEDIUM",action:"Targeted practice",steps:["Review prerequisite","Solve a guided example","Complete 3-5 focused items","Recheck independently"],duration:"8-10 min"};
+ return {priority:"LOW",action:"Maintenance",steps:["One retrieval item","One application problem","Monitor next session"],duration:"3-5 min"};
+}
+app.get("/api/teacher/learner/:id",auth,requireRole("teacher","admin"),(req,res)=>{
+ db.all("SELECT competency,COUNT(*) attempts,SUM(correct) correct,AVG(mastery) mastery,MAX(created_at) last_seen FROM attempts WHERE learner_id=? GROUP BY competency",[req.params.id],(e,rows)=>{
+   if(e)return res.status(500).json({error:e.message});
+   const skills=(rows||[]).map(x=>({...x,accuracy:x.attempts?x.correct/x.attempts:0,recommendation:interventionFor(x.competency,x.attempts?x.correct/x.attempts:0)})).sort((a,b)=>a.mastery-b.mastery);
+   db.get("SELECT * FROM learners WHERE id=?",[req.params.id],(e2,learner)=>res.json({learner,skills,priority:skills.filter(x=>x.accuracy<.6).slice(0,5)}));
+ });
+});
+app.get("/api/teacher/class",auth,requireRole("teacher","admin"),(req,res)=>{
+ db.all(`SELECT l.id,l.name,l.grade,l.section,
+   COUNT(a.id) attempts,COALESCE(SUM(a.correct),0) correct,COALESCE(AVG(a.mastery),0) mastery
+   FROM learners l LEFT JOIN attempts a ON a.learner_id=l.id
+   GROUP BY l.id ORDER BY mastery ASC`,(e,rows)=>{
+    if(e)return res.status(500).json({error:e.message});
+    res.json((rows||[]).map(x=>({...x,accuracy:x.attempts?x.correct/x.attempts:0,status:x.attempts===0?"NO DATA":x.mastery<.45?"AT RISK":x.mastery<.7?"DEVELOPING":"ON TRACK"})));
+ });
+});
+app.get("/api/teacher/interventions",auth,requireRole("teacher","admin"),(req,res)=>{
+ db.all(`SELECT competency,COUNT(*) count,AVG(CASE WHEN correct=0 THEN 1.0 ELSE 0.0 END) error_rate,AVG(mastery) mastery
+ FROM attempts GROUP BY competency ORDER BY error_rate DESC LIMIT 12`,(e,rows)=>{
+   if(e)return res.status(500).json({error:e.message});
+   res.json((rows||[]).map(x=>({...x,recommendation:interventionFor(x.competency,1-x.error_rate)})));
+ });
+});
 
-$("#loadReport").onclick=async()=>{let id=$("#reportLearnerId").value.trim()||learner?.id;if(!id){$("#reportBox").textContent="Enter or create a learner first.";return}
- let r=await(await fetch(`/api/report/${id}`,{headers:authHeaders()})).json();if(r.error){$("#reportBox").textContent=r.error;return}
- let p=await(await fetch(`/api/progress/${id}`,{headers:authHeaders()})).json();let days=p.days||[];
- let max=Math.max(1,...days.map(x=>x.mastery||0));
- $("#reportBox").innerHTML=`<div class="metric"><div><b>${esc(r.learner.name)}</b>Learner</div><div><b>Grade ${r.learner.grade}</b>Current grade</div><div><b>${r.skills.length}</b>Tracked skills</div></div>
- <div style="margin-top:10px"><b>Skill Progress</b>${r.skills.map(x=>`<div style="margin:7px 0;padding:9px;background:#eef2f0;border-radius:9px"><b>${x.competency}</b> · ${x.status}<br>Accuracy ${Math.round(x.accuracy*100)}% · Mastery ${Math.round(x.mastery*100)}%<div class="bar"><div class="fill" style="width:${Math.round(x.mastery*100)}%"></div></div></div>`).join("")||"No evidence yet."}</div>
- <div style="margin-top:10px"><b>Longitudinal Sessions</b>${days.slice(-7).map(x=>`<div style="font-size:11px;padding:4px">${x.day}: ${x.attempts} attempts · ${Math.round(x.accuracy*100)}% accuracy · ${Math.round(x.mastery*100)}% mastery</div>`).join("")||"No sessions yet."}</div>
- <a href="/api/report/${encodeURIComponent(id)}.csv" target="_blank" style="display:block;margin-top:10px;text-decoration:none"><button class="green" style="width:100%">Export CSV Report</button></a>`;
-};
+app.post("/api/conversation",async(req,res)=>{
+ const b=req.body||{};
+ function smartFallback(){
+  const msg=(b.message||"").toLowerCase().trim();
+  const q=b.question||"",exp=b.expected||"";
+  // If the learner wrote an equation ending in "= <number>" (e.g. "5 + 3 = 8"), treat the
+  // number after "=" as their STATED ANSWER to the current problem and compare it to the
+  // real expected answer — instead of re-solving the expression from scratch, which would
+  // ignore whatever they actually wrote after "=" and never congratulate a correct answer.
+  if(msg.includes("=") && exp!==""){
+   const statedRaw=msg.split("=").pop().trim();
+   const statedMatch=statedRaw.match(/-?\d+(\.\d+)?/);
+   if(statedMatch){
+    const stated=statedMatch[0];
+    if(String(stated)===String(exp).trim()){
+     return {reply:`Yes! ${stated} is correct! Great job! Try the next problem.`,emotion:"celebrate",speech:`Yes, ${stated} is correct! Great job!`,hint:"",nextQuestion:"Try the next problem!"}
+    }else{
+     return {reply:`Not quite — the answer to ${q} is ${exp}. Let's try the next one!`,emotion:"encourage",speech:`The answer is ${exp}. Don't worry, let's try the next one!`,hint:`The answer is ${exp}.`,nextQuestion:"Try again!"}
+    }
+   }
+  }
+  // Try to detect and compute math expressions in the message
+  const mathMatch=msg.match(/(?:what(?:'s| is)\s+)?(\d+)\s*([+\-×x*÷/])\s*(\d+)/);
+  if(mathMatch){
+   const a=+mathMatch[1],op=mathMatch[2],c=+mathMatch[3];
+   let ans,opName;
+   if(op==="+"){ ans=a+c; opName="plus" }
+   else if(op==="-"||op==="−"){ ans=a-c; opName="minus" }
+   else if(op==="×"||op==="x"||op==="*"){ ans=a*c; opName="times" }
+   else if(op==="÷"||op==="/"){ ans=c!==0?a/c:"undefined"; opName="divided by" }
+   if(ans!==undefined){
+    const isWhole=Number.isInteger(ans);
+    return {reply:`${a} ${opName} ${c} equals ${isWhole?ans:ans.toFixed(2)}!`,emotion:"happy",speech:`${a} ${opName} ${c} equals ${isWhole?ans:ans.toFixed(2)}.`,hint:"",nextQuestion:"Try another problem!"}
+   }
+  }
+  // Detect spelled-out math: "12 divided by 2", "5 plus 3", "8 minus 2", "4 times 3"
+  const spelledMatch=msg.match(/(\d+)\s*(plus|added to|and|minus|subtract|take away|times|multiplied by|divided by|shared among|split by|over)\s*(\d+)/i);
+  if(spelledMatch){
+   const a=+spelledMatch[1],opWord=spelledMatch[2].toLowerCase(),c=+spelledMatch[3];
+   let ans,opName;
+   if(/plus|added|and/.test(opWord)){ans=a+c;opName="plus"}
+   else if(/minus|subtract|take/.test(opWord)){ans=a-c;opName="minus"}
+   else if(/times|multipli/.test(opWord)){ans=a*c;opName="times"}
+   else if(/divid|shared|split|over/.test(opWord)){ans=c!==0?a/c:0;opName="divided by"}
+   if(ans!==undefined){
+    const isWhole=Number.isInteger(ans);
+    return {reply:`${a} ${opName} ${c} equals ${isWhole?ans:ans.toFixed(2)}!`,emotion:"happy",speech:`${a} ${opName} ${c} equals ${isWhole?ans:ans.toFixed(2)}.`,hint:"",nextQuestion:"Try another problem!"}
+   }
+  }
+  // Detect word problems from the student: "if I have X and give/get Y"
+  const wpAdd=msg.match(/(?:have|has|got)\s+(\d+).*?(?:gave|give|get|gets|more|added|another)\s+(\d+)/i);
+  if(wpAdd){const a=+wpAdd[1],b=+wpAdd[2];
+   if(msg.includes("gave away")||msg.includes("give away")||msg.includes("lost")||msg.includes("took")||msg.includes("ate")){
+    return {reply:`If you start with ${a} and take away ${b}, you have ${a-b} left!`,emotion:"happy",speech:`${a} minus ${b} equals ${a-b}.`,hint:"",nextQuestion:""}
+   }
+   return {reply:`If you have ${a} and get ${b} more, you have ${a+b} in total!`,emotion:"happy",speech:`${a} plus ${b} equals ${a+b}.`,hint:"",nextQuestion:""}
+  }
+  const wpDiv=msg.match(/(?:have|has)\s+(\d+).*?(?:share|split|divide|among|between)\s*(?:them\s*)?(?:to|among|between|into)?\s*(\d+)/i);
+  if(wpDiv){const a=+wpDiv[1],b=+wpDiv[2];const ans=b!==0?a/b:0;const isWhole=Number.isInteger(ans);
+   return {reply:`If you share ${a} equally among ${b}, each gets ${isWhole?ans:ans.toFixed(1)}!`,emotion:"happy",speech:`${a} divided by ${b} equals ${isWhole?ans:ans.toFixed(1)}.`,hint:"",nextQuestion:""}
+  }
+  // Detect "how to" teaching requests
+  if(msg.includes("how")&&msg.includes("add")||msg.includes("teach")&&msg.includes("add")||msg.includes("addition")){
+   return {reply:"To add numbers, you combine them together. For example, 3 + 2: start with 3, then count up 2 more — four, five. The answer is 5! Try it with the problem on the right.",emotion:"encourage",speech:"To add numbers, combine them together. Start with the bigger number and count up!",hint:"Start with the bigger number and count up.",nextQuestion:"Try the problem on the right!"}
+  }
+  if(msg.includes("how")&&msg.includes("subtract")||msg.includes("teach")&&msg.includes("subtract")||msg.includes("subtraction")){
+   return {reply:"To subtract, you take away from the bigger number. For example, 8 - 3: start with 8, then count down 3 — seven, six, five. The answer is 5!",emotion:"encourage",speech:"To subtract, start with the bigger number and count down.",hint:"Start with the bigger number and count down.",nextQuestion:"Try the problem!"}
+  }
+  if(msg.includes("how")&&msg.includes("multipl")||msg.includes("teach")&&msg.includes("multipl")||msg.includes("multiplication")){
+   return {reply:"Multiplication is adding the same number many times. For example, 3 × 4 means 3 groups of 4: 4 + 4 + 4 = 12!",emotion:"encourage",speech:"Multiplication means adding the same number many times. 3 times 4 means three groups of four.",hint:"Think of it as groups.",nextQuestion:"Try the problem!"}
+  }
+  if(msg.includes("how")&&msg.includes("divid")||msg.includes("teach")&&msg.includes("divid")||msg.includes("division")){
+   return {reply:"Division means sharing equally. For example, 12 ÷ 3: if you share 12 apples among 3 friends, each friend gets 4 apples!",emotion:"encourage",speech:"Division means sharing equally. 12 divided by 3 means sharing 12 things among 3 groups.",hint:"Think about sharing equally.",nextQuestion:"Try the problem!"}
+  }
+  // Only check number-as-answer if message is SHORT and looks like a simple answer (not a question)
+  const isQuestion=msg.includes("?")||msg.includes("what")||msg.includes("how")||msg.includes("if i")||msg.includes("if you")||msg.includes("many")||msg.length>30;
+  if(!isQuestion){
+   const numMatch=msg.match(/^\s*(\d+)\s*$/);
+   if(numMatch&&exp){
+    const gave=+numMatch[1],expected=+exp;
+    if(gave===expected){
+     return {reply:`Yes! ${gave} is correct! Great job! Try the next problem.`,emotion:"celebrate",speech:`Yes, ${gave} is correct! Great job!`,hint:"",nextQuestion:"Try the next problem!"}
+    } else {
+     return {reply:`Not quite — the answer to ${q} is ${exp}. Let's try the next one!`,emotion:"encourage",speech:`The answer is ${exp}. Don't worry, let's try the next one!`,hint:`The answer is ${exp}.`,nextQuestion:"Try again!"}
+    }
+   }
+  }
+  // Generic encouraging fallback
+  const tips=["Try breaking the problem into smaller steps!","Start with what you know, then work from there.","Use your fingers or draw circles to help count.","Think about it like sharing objects with friends.","You're doing great — keep practicing!"];
+  const tip=tips[Math.floor(Math.random()*tips.length)];
+  return {reply:`${tip} Try answering the problem on the right, or ask me something like "What is 5 + 3?"`,emotion:"encourage",speech:tip,hint:"Try the problem on the right side!",nextQuestion:"What would you like to learn?"}
+ }
 
+ const fallback=smartFallback();
+ if(!AI_KEY){console.log("[MathBuddy] AI_KEY is empty — using smart fallback");return res.json(fallback)}
+ console.log("[MathBuddy] Calling AI...",AI_MODEL,"key:",AI_KEY.slice(0,8)+"...");
+ const prompt=`You are MathBuddy, a kind and encouraging math tutor for Filipino elementary and junior high students.
 
-const QUEUE_KEY="mathbuddy_attempt_queue_v19",DB_NAME="MathBuddyOffline",DB_VERSION=1,STORE="attempts";
-let idb=null;
-function openQueueDB(){return new Promise((resolve,reject)=>{if(!("indexedDB" in window))return resolve(null);let r=indexedDB.open(DB_NAME,DB_VERSION);r.onupgradeneeded=()=>r.result.createObjectStore(STORE,{keyPath:"queueId",autoIncrement:true});r.onsuccess=()=>{idb=r.result;resolve(idb)};r.onerror=()=>resolve(null)})}
-async function getQueue(){if(!idb)await openQueueDB();if(!idb){try{return JSON.parse(localStorage.getItem(QUEUE_KEY)||"[]")}catch{return[]}}return new Promise(resolve=>{let a=[];let r=idb.transaction(STORE,"readonly").objectStore(STORE).openCursor();r.onsuccess=e=>{let c=e.target.result;if(c){a.push(c.value);c.continue()}else resolve(a)}})}
-async function setQueue(q){if(!idb)await openQueueDB();if(!idb){localStorage.setItem(QUEUE_KEY,JSON.stringify(q));return}await new Promise(resolve=>{let tx=idb.transaction(STORE,"readwrite"),s=tx.objectStore(STORE);s.clear();for(const x of q){let y={...x};delete y.queueId;s.add(y)}tx.oncomplete=resolve;tx.onerror=resolve})}
-async function renderQueue(){const q=await getQueue();$("#queueStatus").textContent=`Queued attempts: ${q.length}`;$("#netStatus").textContent=navigator.onLine?"🟢 Online":"🔴 Offline - saving locally";}
+LANGUAGE RULES:
+- ALWAYS reply in simple, clear English — no Tagalog, no Taglish.
+- Use warm, child-friendly English: "Great job!", "Nice try!", "Let's figure this out together!"
+- Even if the learner writes in Tagalog or Taglish, always reply in English.
+- Your replies will be read aloud by text-to-speech, so use natural spoken English.
 
+TEACHING RULES:
+- DIRECT QUESTIONS like "What is 3+4?", "What's 10-6?", "5 times 3?" → give the answer directly and briefly explain: "3 + 4 = 7. You can count up from 3: four, five, six, seven!"
+- HOW-TO QUESTIONS like "How do I add?", "How does multiplication work?", "Teach me division" → guide step by step using scaffolding with simple examples. Do NOT give the answer right away.
+- WRONG ANSWER on the practice problem → encourage, then ask what they tried first, and guide from there. Do not just say the correct answer immediately.
+- CORRECT ANSWER → celebrate briefly: "Great job! That's correct!" Do not keep asking follow-up questions — let them move on.
+- Use concrete examples a child can imagine: "If you have 5 apples and someone gives you 3 more, how many do you have?"
+- Keep replies SHORT — 1-2 sentences for direct answers, 2-3 sentences for teaching.
 
-async function queueOrSendAttempt(payload){
- if(!navigator.onLine){const q=await getQueue();q.push({...payload,queuedAt:new Date().toISOString(),clientId:crypto.randomUUID?.()||String(Date.now())});await setQueue(q);await renderQueue();return {queued:true,skillState:payload.skillState}}
+CONTEXT:
+Grade: ${b.grade}. Competency: ${b.competency}. Question: ${b.question}. Expected answer: ${b.expected}.
+Learner answer: ${b.answer}. Learner message: ${b.message||""}.
+Mastery: ${b.mastery}. Recent evidence: ${JSON.stringify(b.recent||[])}.
+${b.learnerProfile?`
+LEARNER PROFILE (adapt your teaching based on this):
+- Name: ${b.learnerProfile.name}
+- Overall accuracy: ${Math.round((b.learnerProfile.overallAccuracy||0)*100)}%
+- Average mastery: ${Math.round((b.learnerProfile.avgMastery||0.5)*100)}%
+- Total attempts: ${b.learnerProfile.totalAttempts||0}
+- Weak skills (needs more practice): ${(b.learnerProfile.weakSkills||[]).join(", ")||"none identified yet"}
+- Strong skills: ${(b.learnerProfile.strongSkills||[]).join(", ")||"none yet"}
+- Recent mistakes: ${(b.learnerProfile.recentMistakes||[]).map(m=>`${m.question}=${m.answer}(wrong, correct:${m.expected})`).join("; ")||"none"}
+ADAPTATION RULES:
+- If accuracy is below 50%, use simpler examples and more encouragement.
+- If the learner keeps making the same type of mistake, address that specific misconception.
+- If mastery is high, challenge them with slightly harder thinking questions.
+- Reference their progress positively: "You're getting better at addition!"
+`:""}
+CONVERSATION FLOW RULES:
+- You will receive the recent chat history. READ IT CAREFULLY — do not repeat questions you already asked.
+- If the learner already answered your question correctly, acknowledge it, praise them, and MOVE ON to a new topic or say "Great! Try the next problem on the right side."
+- Do NOT keep asking "how did you get that?" more than once. If they explained, accept it.
+- After 2-3 back-and-forth exchanges on the same topic, WRAP UP with encouragement and suggest trying the next problem.
+- If the learner gives the correct final answer, say something like: "Perfect! You understand this well. Try the next question!"
+- Never loop. Always move the conversation forward.
+
+Return JSON only with keys: reply, emotion (happy|think|encourage|celebrate), nextQuestion, hint, speech.`;
+ const chatMsgs=Array.isArray(b.chatHistory)?b.chatHistory.slice(-10).map(m=>({role:m.role==="user"?"user":"assistant",content:m.content})):[];
+ const messages=[{role:"system",content:prompt},...chatMsgs,{role:"user",content:b.message||"Respond naturally to the learner."}];
  try{
-  const r=await fetch("/api/attempt",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
-  if(!r.ok)throw Error("sync failed");
-  return await r.json();
- }catch(e){
-  const q=await getQueue();q.push({...payload,queuedAt:new Date().toISOString(),clientId:crypto.randomUUID?.()||String(Date.now())});await setQueue(q);await renderQueue();return {queued:true,skillState:payload.skillState};
- }
-}
-async function syncQueue(){
- if(!navigator.onLine)return;
- let q=await getQueue();if(!q.length){await renderQueue();return}
- const remain=[];
- for(const payload of q){
-  try{const r=await fetch("/api/attempt",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});if(!r.ok)throw Error("bad");}
-  catch(e){remain.push(payload)}
- }
- await setQueue(remain);await renderQueue();if(!remain.length)$("#netStatus").textContent="🟢 Online - all queued data synced";
-}
-window.addEventListener("online",()=>{renderQueue();syncQueue()});
-window.addEventListener("offline",renderQueue);
-$("#syncNow").onclick=syncQueue;openQueueDB().then(renderQueue);
+  const r=await fetch(AI_URL,{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${AI_KEY}`},
+   body:JSON.stringify({model:AI_MODEL,temperature:.35,max_tokens:150,response_format:{type:"json_object"},messages})});
+  if(!r.ok){const err=await r.text();console.log("[MathBuddy] AI error:",r.status,err);throw Error(r.status)}
+  const d=await r.json();console.log("[MathBuddy] AI responded OK");res.json(JSON.parse(d.choices?.[0]?.message?.content||"{}"));
+ }catch(e){console.log("[MathBuddy] AI failed:",e.message);res.json(smartFallback())}
+});
 
-
-function authHeaders(){const t=sessionStorage.getItem("mathbuddy_token");return t?{"Authorization":"Bearer "+t}:{}}
-$("#loginBtn").onclick=async()=>{
- const username=$("#loginUser").value,password=$("#loginPass").value;
- const r=await fetch("/api/auth/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({username,password,role:"teacher"})});
- const d=await r.json();
- if(!r.ok){$("#loginStatus").textContent=d.error||"Login failed";return}
- sessionStorage.setItem("mathbuddy_token",d.token);$("#loginStatus").textContent="🟢 Teacher session active";
- teacherDashboard();loadClasses();loadSchools();loadAnalytics();
-};
-
-
-$("#privacyBtn").onclick=async()=>{
- const r=await fetch("/api/privacy/request",{method:"POST",headers:{"Content-Type":"application/json",...authHeaders()},body:JSON.stringify({type:$("#privacyType").value,target:$("#privacyTarget").value})});
- const d=await r.json();$("#privacyStatus").textContent=r.ok?"Request recorded: "+d.status:(d.error||"Request failed");
-};
-
-
-async function loadClasses(){
- const r=await fetch("/api/classes",{headers:authHeaders()});if(!r.ok){$("#classList").textContent="Login as teacher/admin to manage classes.";return}
- const cs=await r.json();
- $("#classList").innerHTML=cs.map(c=>`<button class="dark classBtn" data-id="${esc(c.id)}" style="width:100%;margin:4px 0;text-align:left">Grade ${c.grade} · ${esc(c.name)} · ${esc(c.section||"No section")}</button>`).join("")||"No classes yet.";
- document.querySelectorAll(".classBtn").forEach(b=>b.onclick=()=>loadRoster(b.dataset.id));
-}
-$("#createClass").onclick=async()=>{const b={name:$("#className").value,grade:+$("#classGrade").value||1,section:$("#classSection").value};
- const r=await fetch("/api/classes",{method:"POST",headers:{"Content-Type":"application/json",...authHeaders()},body:JSON.stringify(b)});if(r.ok){loadClasses()}else{$("#classList").textContent=(await r.json()).error||"Unable to create class"}};
-async function loadRoster(id){
- const r=await fetch(`/api/classes/${id}/roster`,{headers:authHeaders()});const rows=await r.json();
- $("#rosterBox").innerHTML=`<b>Class Roster</b>`+rows.map(x=>`<div style="margin:6px 0;padding:9px;background:#eef2f0;border-radius:9px"><b>${esc(x.name)}</b> · Grade ${x.grade}<br>Attempts: ${x.attempts} · Accuracy: ${Math.round(x.accuracy*100)}% · Mastery: ${Math.round(x.mastery*100)}%</div>`).join("")||"<p>No enrolled learners.</p>";
-}
-
-
-$("#bulkImportBtn").onclick=async()=>{
- const lines=$("#bulkLearners").value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
- const learners=lines.map(line=>{const p=line.split(",").map(x=>x.trim());return {id:p[0],name:p[1],grade:+p[2]||1,section:p[3]||""}});
- const r=await fetch("/api/learners/bulk",{method:"POST",headers:{"Content-Type":"application/json",...authHeaders()},body:JSON.stringify({learners})});
- const d=await r.json();$("#bulkStatus").textContent=r.ok?`Imported ${d.added}. Skipped ${d.skipped}. Errors: ${(d.errors||[]).length}`:(d.error||"Import failed");
-};
-async function loadSchools(){const r=await fetch("/api/schools",{headers:authHeaders()});if(!r.ok)return;const s=await r.json();$("#schoolList").innerHTML=s.map(x=>`<div style="padding:7px;background:#eef2f0;border-radius:8px;margin:5px 0"><b>${esc(x.name)}</b><br><small>School ID: ${esc(x.id)} · Division: ${esc(x.division_id)}</small></div>`).join("")||"No schools yet."}
-
-
-async function loadAnalytics(){
- const [s,c]=await Promise.all([
-  fetch("/api/analytics/summary",{headers:authHeaders()}),
-  fetch("/api/analytics/competencies",{headers:authHeaders()})
- ]);
- if(!s.ok||!c.ok){$("#analyticsStatus").textContent="Login required.";return}
- const grades=await s.json(),skills=await c.json();
- const learners=grades.reduce((a,x)=>a+x.learners,0),attempts=grades.reduce((a,x)=>a+x.attempts,0);
- const acc=attempts?grades.reduce((a,x)=>a+x.accuracy*x.attempts,0)/attempts:0;
- const mastery=attempts?grades.reduce((a,x)=>a+x.mastery*x.attempts,0)/attempts:0;
- $("#analyticsKpi").innerHTML=`<div><b>${learners}</b>Learners</div><div><b>${attempts}</b>Attempts</div><div><b>${Math.round(acc)}%</b>Accuracy</div><div><b>${Math.round(mastery)}%</b>Mastery</div>`;
- $("#gradeAnalytics").innerHTML="<b>By Grade Level</b>"+grades.map(x=>`<div style="margin:7px 0;padding:9px;background:#eef2f0;border-radius:9px"><b>Grade ${x.grade}</b> · ${x.learners} learners · ${x.attempts} attempts<br>Accuracy ${Math.round(x.accuracy)}% · Mastery ${Math.round(x.mastery)}%</div>`).join("")||"No data.";
- $("#competencyAnalytics").innerHTML="<b>Competency Gaps</b>"+skills.map(x=>`<div style="margin:7px 0;padding:9px;background:#fff1e8;border-radius:9px"><b>${x.competency}</b><br>Accuracy ${Math.round(x.accuracy)}% · Mastery ${Math.round(x.mastery)}% · ${x.attempts} attempts</div>`).join("")||"No competency data.";
-}
-$("#refreshAnalytics").onclick=loadAnalytics;
-
-
-$("#loadIntervention").onclick=async()=>{
- const id=$("#interventionLearner").value.trim()||learner?.id;if(!id){$("#interventionBox").textContent="Enter a learner ID.";return}
- const r=await fetch(`/api/intervention/${id}`,{headers:authHeaders()});const d=await r.json();
- if(!r.ok){$("#interventionBox").textContent=d.error||"Unable to generate plan.";return}
- $("#interventionBox").innerHTML=d.recommendations.map(x=>{
-  const icon=x.level==="INTENSIVE"?"🔴":x.level==="DEVELOPING"?"🟡":"🟢";
-  return `<div style="margin:8px 0;padding:10px;background:#eef2f0;border-radius:9px"><b>${icon} ${x.competency}</b><br>Mastery: ${Math.round(x.mastery)}% · Accuracy: ${Math.round(x.accuracy)}%<br><b>${x.level}</b>: ${x.action}</div>`;
- }).join("")||"Not enough evidence yet.";
-};
-
-
-$("#generateAdaptive").onclick=async()=>{
- const grade=+$("#adaptiveGrade").value||1,operation=$("#adaptiveOp").value,mastery=+$("#adaptiveMastery").value||0;
- const r=await fetch("/api/adaptive-item",{method:"POST",headers:{"Content-Type":"application/json",...authHeaders()},body:JSON.stringify({grade,operation,mastery})});
- const d=await r.json();if(!r.ok){$("#adaptiveResult").textContent=d.error||"Unable to generate";return}
- $("#adaptiveResult").innerHTML=`<div style="padding:12px;background:#eef2f0;border-radius:10px"><b>Grade ${d.grade}</b> · ${d.operation} · ${d.pair}<br><span style="font-size:22px;font-weight:900">${d.a} ${d.operation==="addition"?"+":d.operation==="subtraction"?"−":d.operation==="multiplication"?"×":"÷"} ${d.b} = ?</span><br><small>Mastery band: ${d.masteryBand}</small></div>`;
-};
-
-
-$("#analyzeMc").onclick=async()=>{
- const payload={operation:$("#mcOp").value,a:+$("#mcA").value,b:+$("#mcB").value,answer:+$("#mcAns").value};
- const r=await fetch("/api/analyze-response",{method:"POST",headers:{"Content-Type":"application/json",...authHeaders()},body:JSON.stringify(payload)});
- const d=await r.json();if(!r.ok){$("#mcResult").textContent=d.error||"Unable to analyze.";return}
- $("#mcResult").innerHTML=d.misconceptions.length?
-  `<b>Possible misconception:</b><ul>${d.misconceptions.map(x=>`<li>${x.replaceAll("_"," ")}</li>`).join("")}</ul><b>Suggested scaffold:</b><ul>${d.scaffolds.map(x=>`<li>${x}</li>`).join("")}</ul>`:
-  `<b>Calculation pattern:</b> no known misconception detected. Correct answer is ${d.correct}.`;
-};
-
-
-$("#dialogueBtn").onclick=async()=>{
- const r=await fetch("/api/tutor/dialogue",{method:"POST",headers:{"Content-Type":"application/json",...authHeaders()},body:JSON.stringify({
-  grade:+$("#dialogueGrade").value||1,problem:$("#dialogueProblem").value,correctAnswer:$("#dialogueCorrect").value,
-  studentResponse:$("#dialogueStudent").value,answer:""
- })});
- const d=await r.json();$("#dialogueResult").innerHTML=r.ok?`<div style="padding:12px;background:#eef2f0;border-radius:10px"><b>🤖 Tutor:</b> ${d.reply}<br><small>Next action: ${d.nextAction}</small></div>`:(d.error||"Unable to start dialogue.");
-};
-
-
-let recognition=null,lastVoiceText="";
-const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-if(SR){
- recognition=new SR();recognition.continuous=false;recognition.interimResults=true;recognition.lang="en-PH";
- recognition.onstart=()=>$("#voiceStatus").textContent="🟢 Listening...";
- recognition.onend=()=>$("#voiceStatus").textContent="Stopped.";
- recognition.onresult=e=>{let t="";for(let i=e.resultIndex;i<e.results.length;i++)t+=e.results[i][0].transcript;lastVoiceText=t;$("#voiceTranscript").textContent=t;};
-}else $("#voiceStatus").textContent="Speech recognition is not supported by this browser.";
-$("#voiceLang").onchange=()=>{if(recognition)recognition.lang=$("#voiceLang").value};
-$("#voiceStart").onclick=()=>{if(!recognition){$("#voiceStatus").textContent="Speech recognition unavailable.";return}recognition.lang=$("#voiceLang").value;recognition.start()};
-$("#voiceStop").onclick=()=>recognition?.stop();
-$("#voiceSpeak").onclick=()=>{
- const text=$("#voiceReply").textContent.trim()||"Tell me how you got your answer.";
- if("speechSynthesis" in window){speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang=$("#voiceLang").value;speechSynthesis.speak(u)}
-};
-
-let lastTutorSpeech="";
-let cachedVoices=[];
-const FEMALE_HINTS=/female|woman|girl|zira|hazel|susan|samantha|karen|moira|fiona|tessa|alice|amelie|anna|carmit|damayanti|ellen|ioana|joana|kanya|kyoko|lana|laura|lekha|luciana|mariska|meijia|melina|milena|monica|nora|paulina|sara|satu|sinji|tina|yelda|zosia|Google.*Female/i;
-const MALE_HINTS=/male|man|boy|david|mark|james|daniel|thomas|jorge|juan|diego|luca|yuri|Google.*Male/i;
-function voiceGender(v){
- const n=v.name||"";
- if(FEMALE_HINTS.test(n))return "female";
- if(MALE_HINTS.test(n))return "male";
- return "unknown";
-}
-function loadVoices(){cachedVoices=window.speechSynthesis?speechSynthesis.getVoices():[];populateVoicePicker()}
-if("speechSynthesis" in window){loadVoices();speechSynthesis.onvoiceschanged=loadVoices}
-function populateVoicePicker(){
- const sel=$("#voicePick");if(!sel||!sel.tagName)return;
- const prev=sel.value;
- const gender=$("#voiceGender")?.value||"female";
- const filtered=cachedVoices.filter(v=>{const g=voiceGender(v);return g===gender||g==="unknown"});
- const sorted=[...(filtered.length?filtered:cachedVoices)].sort((a,b)=>a.name.localeCompare(b.name));
- sel.innerHTML=`<option value="">Auto (best for selected type)</option>`+sorted.map(v=>`<option value="${esc(v.name)}">${esc(v.name)} (${esc(v.lang)})</option>`).join("");
- if(sorted.some(v=>v.name===prev))sel.value=prev;else sel.value="";
-}
-$("#voiceGender").onchange=()=>populateVoicePicker();
-$("#voiceEnabled").onchange=function(){$("#voiceOnOff").textContent=this.checked?"🔊 On":"🔇 Off";if(!this.checked&&"speechSynthesis" in window)window.speechSynthesis.cancel()};
-function pickVoice(lang){
- const picked=$("#voicePick")?.value;
- if(picked){const chosen=cachedVoices.find(v=>v.name===picked);if(chosen)return chosen}
- if(!cachedVoices.length)return null;
- const gender=$("#voiceGender")?.value||"female";
- const base=lang.split("-")[0];
- const langMatches=cachedVoices.filter(v=>v.lang&&v.lang.toLowerCase().startsWith(base));
- const pool=langMatches.length?langMatches:cachedVoices.filter(v=>v.lang&&v.lang.toLowerCase().startsWith("en"));
- if(!pool.length)return cachedVoices[0];
- const genderPool=pool.filter(v=>{const g=voiceGender(v);return g===gender});
- const candidates=genderPool.length?genderPool:pool;
- const preferredNames=/natural|neural|online|enhanced|premium|google/i;
- return candidates.find(v=>preferredNames.test(v.name))||candidates.find(v=>v.localService===false)||candidates[0];
- return pool.find(v=>preferredNames.test(v.name))||pool.find(v=>v.localService===false)||pool[0];
-}
-
-const PRAISE=["Excellent!","Good job!","Great work!","Well done!","Perfect!","Nailed it!","Amazing!","Correct!","Awesome!","You got it!"];
-const ENCOURAGE=["Good try!","Keep going!","Almost there!","Nice effort!","You're learning!","Don't give up!","So close!","Try again, you can do it!"];
-function randomFrom(arr){return arr[Math.floor(Math.random()*arr.length)]}
-function toSpeechText(q){
- return String(q||"").replace(/×/g," times ").replace(/÷/g," divided by ").replace(/−/g," minus ").replace(/\+/g," plus ").replace(/=/g," equals ");
-}
-function speakText(text,statusSel,label){
- if(!text)return;
- if(!$("#voiceEnabled").checked)return;
- const voice=$("#voiceGender")?.value||"tara";
- if(voice.startsWith("browser")){
-  if(!("speechSynthesis" in window)){if(statusSel)$(statusSel).textContent="Voice not supported.";return}
-  window.speechSynthesis.cancel();
-  const lang=$("#voiceLang")?.value||"en-PH";
-  const u=new SpeechSynthesisUtterance(text);
-  const v=pickVoice(lang);if(v)u.voice=v;
-  u.lang=lang;u.rate=0.88;u.pitch=voice==="browser-male"?0.9:1.05;
-  if(statusSel){const prev=$(statusSel).textContent;u.onstart=()=>$(statusSel).textContent=label||"🔊 Speaking...";u.onend=()=>$(statusSel).textContent=prev&&prev!==label?prev:"";u.onerror=()=>$(statusSel).textContent="";}
-  window.speechSynthesis.speak(u);
- } else {
-  if(statusSel)$(statusSel).textContent=label||"🔊 Speaking...";
-  cloudSpeak(text,voice).then(ok=>{
-   if(!ok){browserSpeak(text)}
-   if(statusSel)$(statusSel).textContent="";
+app.get("/api/progress/:id",auth,requireRole("teacher","admin"),(req,res)=>{
+ db.all(`SELECT DATE(created_at) day,COUNT(*) attempts,SUM(correct) correct,AVG(mastery) mastery
+ FROM attempts WHERE learner_id=? GROUP BY DATE(created_at) ORDER BY day ASC`,[req.params.id],(e,rows)=>{
+  if(e)return res.status(500).json({error:e.message});
+  const out=(rows||[]).map(x=>({...x,accuracy:x.attempts?x.correct/x.attempts:0}));
+  res.json({learnerId:req.params.id,days:out});
+ });
+});
+app.get("/api/report/:id",auth,requireRole("teacher","admin"),(req,res)=>{
+ db.get("SELECT * FROM learners WHERE id=?",[req.params.id],(e,learner)=>{
+  if(e)return res.status(500).json({error:e.message});
+  if(!learner)return res.status(404).json({error:"Learner not found"});
+  db.all(`SELECT competency,COUNT(*) attempts,SUM(correct) correct,AVG(mastery) mastery,MAX(created_at) last_seen
+   FROM attempts WHERE learner_id=? GROUP BY competency ORDER BY mastery ASC`,[req.params.id],(e2,skills)=>{
+   if(e2)return res.status(500).json({error:e2.message});
+   const data=(skills||[]).map(x=>({...x,accuracy:x.attempts?x.correct/x.attempts:0,status:x.mastery<.45?"AT RISK":x.mastery<.7?"DEVELOPING":"ON TRACK"}));
+   res.json({generatedAt:now(),learner,skills:data});
   });
+ });
+});
+app.get("/api/report/:id.csv",auth,requireRole("teacher","admin"),(req,res)=>{
+ db.get("SELECT * FROM learners WHERE id=?",[req.params.id],(e,learner)=>{
+  if(e||!learner)return res.status(404).send("Learner not found");
+  db.all(`SELECT competency,COUNT(*) attempts,SUM(correct) correct,AVG(mastery) mastery,MAX(created_at) last_seen
+   FROM attempts WHERE learner_id=? GROUP BY competency ORDER BY mastery ASC`,[req.params.id],(e2,rows)=>{
+    if(e2)return res.status(500).send(e2.message);
+    let csv="Learner,Grade,Competency,Attempts,Accuracy,Mastery,Status,Last Seen\n";
+    for(const x of rows||[]){let acc=x.attempts?x.correct/x.attempts:0;let status=x.mastery<.45?"AT RISK":x.mastery<.7?"DEVELOPING":"ON TRACK";
+      csv += [learner.name,learner.grade,x.competency,x.attempts,Math.round(acc*100)+"%",Math.round(x.mastery*100)+"%",status,x.last_seen].map(v=>`"${String(v).replace(/"/g,'""')}"`).join(",")+"\n";}
+    res.setHeader("Content-Type","text/csv");res.setHeader("Content-Disposition",`attachment; filename="MathBuddy_${learner.name.replace(/[^a-z0-9]/gi,"_")}_report.csv"`);res.send(csv);
+   });
+ });
+});
+
+const SESSION_TTL=8*60*60*1000;
+const sessions=new Map();
+function hashPassword(p,salt){return crypto.scryptSync(String(p),salt,64).toString("hex")}
+function makeToken(){return crypto.randomBytes(32).toString("hex")}
+function auth(req,res,next){
+ const h=req.headers.authorization||"",token=h.startsWith("Bearer ")?h.slice(7):"";
+ const s=sessions.get(token);
+ if(!s||Date.now()-s.created>SESSION_TTL)return res.status(401).json({error:"Unauthorized"});
+ req.user=s.user;req.sessionToken=token;next();
+}
+function requireRole(...roles){return (req,res,next)=>{if(!req.user||!roles.includes(req.user.role))return res.status(403).json({error:"Forbidden"});next()}}
+function audit(req,action,target,details=""){
+ db.run("INSERT INTO audit_log(actor,role,action,target,details,created_at) VALUES(?,?,?,?,?,?)",
+ [req.user?.username||"system",req.user?.role||"system",action,target,String(details).slice(0,500),now()]);
+}
+const LOGIN_MAX_ATTEMPTS=5,LOGIN_LOCKOUT_MS=15*60*1000,loginAttempts=new Map();
+function loginRateLimited(key){
+ const rec=loginAttempts.get(key);
+ if(!rec)return false;
+ if(rec.count>=LOGIN_MAX_ATTEMPTS && Date.now()-rec.first<LOGIN_LOCKOUT_MS)return true;
+ if(Date.now()-rec.first>=LOGIN_LOCKOUT_MS)loginAttempts.delete(key);
+ return false;
+}
+function recordLoginFailure(key){
+ const rec=loginAttempts.get(key);
+ if(!rec||Date.now()-rec.first>=LOGIN_LOCKOUT_MS)loginAttempts.set(key,{count:1,first:Date.now()});
+ else rec.count++;
+}
+app.post("/api/auth/login",(req,res)=>{
+ const {username,password,role="teacher"}=req.body||{};
+ const rateKey=(req.ip||"unknown")+":"+String(username||"");
+ if(loginRateLimited(rateKey))return res.status(429).json({error:"Too many attempts. Try again later."});
+ // Pilot credentials can be provisioned through environment variables.
+ const expectedUser=process.env.MATHBUDDY_USER||"teacher";
+ const expectedHash=process.env.MATHBUDDY_PASSWORD_HASH;
+ const salt=process.env.MATHBUDDY_PASSWORD_SALT;
+ if(!expectedHash||!salt||username!==expectedUser||hashPassword(password,salt)!==expectedHash){
+   recordLoginFailure(rateKey);
+   return res.status(401).json({error:"Invalid credentials"});
  }
+ loginAttempts.delete(rateKey);
+ const token=makeToken();sessions.set(token,{created:Date.now(),user:{username,role}});
+ db.run("INSERT INTO audit_log(actor,role,action,target,details,created_at) VALUES(?,?,?,?,?,?)",
+ [username,role,"LOGIN","AUTH","successful login",now()]);
+ res.json({token,expiresIn:SESSION_TTL});
+});
+app.post("/api/auth/logout",(req,res)=>{
+ const h=req.headers.authorization||"",token=h.startsWith("Bearer ")?h.slice(7):"";sessions.delete(token);if(token) db.run("INSERT INTO audit_log(actor,role,action,target,details,created_at) VALUES(?,?,?,?,?,?)",
+ [req.user?.username||"unknown",req.user?.role||"unknown","LOGOUT","AUTH","logout",now()]);res.json({ok:true});
+});
+
+app.post("/api/privacy/request",auth,requireRole("teacher","admin"),(req,res)=>{
+ const {type,target}=req.body||{};
+ const allowed=["access","export","delete"];
+ if(!allowed.includes(type))return res.status(400).json({error:"Unsupported request type"});
+ db.run("INSERT INTO data_requests(requester,request_type,target,status,created_at) VALUES(?,?,?,?,?)",
+ [req.user.username,type,String(target||""),"PENDING",now()],e=>{
+   if(e)return res.status(500).json({error:e.message});
+   audit(req,"PRIVACY_REQUEST",String(target||""),type);res.json({ok:true,status:"PENDING"});
+ });
+});
+app.get("/api/audit",auth,requireRole("admin"),(req,res)=>{
+ db.all("SELECT actor,role,action,target,details,created_at FROM audit_log ORDER BY id DESC LIMIT 200",(e,rows)=>{
+  if(e)return res.status(500).json({error:e.message});res.json(rows||[]);
+ });
+});
+app.get("/api/privacy/requests",auth,requireRole("admin"),(req,res)=>{
+ db.all("SELECT * FROM data_requests ORDER BY id DESC LIMIT 200",(e,rows)=>{
+  if(e)return res.status(500).json({error:e.message});res.json(rows||[]);
+ });
+});
+
+app.post("/api/classes",auth,requireRole("teacher","admin"),(req,res)=>{
+ const b=req.body||{},id="C-"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,7);
+ db.run("INSERT INTO classes(id,name,grade,section,teacher_username,created_at) VALUES(?,?,?,?,?,?)",
+ [id,b.name||"New Class",+b.grade||1,b.section||"",req.user.username,now()],e=>{
+  if(e)return res.status(500).json({error:e.message});audit(req,"CREATE_CLASS",id,b.name||"");res.json({id});
+ });
+});
+app.get("/api/classes",auth,requireRole("teacher","admin"),(req,res)=>{
+ const q=req.user.role==="admin"?"SELECT * FROM classes ORDER BY grade,name":"SELECT * FROM classes WHERE teacher_username=? ORDER BY grade,name";
+ db.all(q,req.user.role==="admin"?[]:[req.user.username],(e,rows)=>e?res.status(500).json({error:e.message}):res.json(rows||[]));
+});
+app.post("/api/classes/:id/enroll",auth,requireRole("teacher","admin"),(req,res)=>{
+ const id=req.params.id, learnerId=String(req.body?.learnerId||"");
+ if(!learnerId)return res.status(400).json({error:"learnerId required"});
+ db.get("SELECT * FROM classes WHERE id=?",[id],(e,c)=>{
+  if(e||!c)return res.status(404).json({error:"Class not found"});
+  if(req.user.role!=="admin"&&c.teacher_username!==req.user.username)return res.status(403).json({error:"Forbidden"});
+  db.run("INSERT OR IGNORE INTO enrollments(class_id,learner_id,enrolled_at) VALUES(?,?,?)",[id,learnerId,now()],e2=>{
+   if(e2)return res.status(500).json({error:e2.message});audit(req,"ENROLL",learnerId,`class=${id}`);res.json({ok:true});
+  });
+ });
+});
+app.get("/api/classes/:id/roster",auth,requireRole("teacher","admin"),(req,res)=>{
+ db.get("SELECT * FROM classes WHERE id=?",[req.params.id],(e,c)=>{
+  if(e||!c)return res.status(404).json({error:"Class not found"});
+  if(req.user.role!=="admin"&&c.teacher_username!==req.user.username)return res.status(403).json({error:"Forbidden"});
+  db.all(`SELECT l.id,l.name,l.grade,l.section,COUNT(a.id) attempts,COALESCE(AVG(a.mastery),0) mastery,
+   COALESCE(SUM(a.correct)*1.0/NULLIF(COUNT(a.id),0),0) accuracy
+   FROM enrollments en JOIN learners l ON l.id=en.learner_id
+   LEFT JOIN attempts a ON a.learner_id=l.id WHERE en.class_id=? GROUP BY l.id ORDER BY l.name`,[req.params.id],
+   (e2,rows)=>e2?res.status(500).json({error:e2.message}):res.json(rows||[]));
+ });
+});
+
+app.post("/api/divisions",auth,requireRole("admin"),(req,res)=>{
+ const id="D-"+Date.now().toString(36);db.run("INSERT INTO divisions(id,name,created_at) VALUES(?,?,?)",[id,req.body?.name||"Division",now()],e=>{if(e)return res.status(500).json({error:e.message});audit(req,"CREATE_DIVISION",id,req.body?.name||"");res.json({id})});
+});
+app.post("/api/schools",auth,requireRole("admin"),(req,res)=>{
+ const id="S-"+Date.now().toString(36);db.run("INSERT INTO schools(id,division_id,name,created_at) VALUES(?,?,?,?)",[id,req.body?.divisionId,req.body?.name||"School",now()],e=>{if(e)return res.status(500).json({error:e.message});audit(req,"CREATE_SCHOOL",id,req.body?.name||"");res.json({id})});
+});
+app.post("/api/learners/bulk",auth,requireRole("teacher","admin"),(req,res)=>{
+ const rows=Array.isArray(req.body?.learners)?req.body.learners:[];
+ if(!rows.length)return res.status(400).json({error:"No learners supplied"});
+ let added=0,skipped=0,errors=[];
+ let pending=rows.length;
+ rows.forEach((x,i)=>{
+   const id=String(x.id||"L-"+Date.now().toString(36)+"-"+i+"-"+Math.random().toString(36).slice(2,6));
+   db.run("INSERT OR IGNORE INTO learners(id,name,grade,section) VALUES(?,?,?,?)",[id,String(x.name||"Learner"),+x.grade||1,String(x.section||"")],function(e){
+    if(e)errors.push({row:i,error:e.message}); else if(this.changes===0)skipped++; else added++;
+    if(--pending===0){audit(req,"BULK_IMPORT","LEARNERS",`added=${added},skipped=${skipped}`);res.json({added,skipped,errors})}
+   });
+ });
+});
+app.post("/api/classes/:id/enroll-bulk",auth,requireRole("teacher","admin"),(req,res)=>{
+ const classId=req.params.id,ids=Array.isArray(req.body?.learnerIds)?req.body.learnerIds:[];
+ db.get("SELECT * FROM classes WHERE id=?",[classId],(e,c)=>{
+  if(e||!c)return res.status(404).json({error:"Class not found"});
+  if(req.user.role!=="admin"&&c.teacher_username!==req.user.username)return res.status(403).json({error:"Forbidden"});
+  let added=0,pending=ids.length;if(!pending)return res.json({added:0});
+  ids.forEach(id=>db.run("INSERT OR IGNORE INTO enrollments(class_id,learner_id,enrolled_at) VALUES(?,?,?)",[classId,id,now()],()=>{added++;if(--pending===0){audit(req,"BULK_ENROLL",classId,`count=${added}`);res.json({added})}}));
+ });
+});
+app.get("/api/schools",auth,requireRole("admin"),(req,res)=>db.all("SELECT * FROM schools ORDER BY name",(e,r)=>e?res.status(500).json({error:e.message}):res.json(r||[])));
+
+app.get("/api/analytics/summary",auth,requireRole("teacher","admin"),(req,res)=>{
+ const where=req.user.role==="admin"?"":" WHERE c.teacher_username=?";
+ const params=req.user.role==="admin"?[]:[req.user.username];
+ const q=`SELECT c.grade,COUNT(DISTINCT en.learner_id) learners,COUNT(a.id) attempts,
+  COALESCE(AVG(a.correct)*100,0) accuracy,COALESCE(AVG(a.mastery)*100,0) mastery
+  FROM classes c LEFT JOIN enrollments en ON en.class_id=c.id
+  LEFT JOIN attempts a ON a.learner_id=en.learner_id${where} GROUP BY c.grade ORDER BY c.grade`;
+ db.all(q,params,(e,rows)=>e?res.status(500).json({error:e.message}):res.json(rows||[]));
+});
+app.get("/api/analytics/competencies",auth,requireRole("teacher","admin"),(req,res)=>{
+ const where=req.user.role==="admin"?"":" AND c.teacher_username=?";
+ const params=req.user.role==="admin"?[]:[req.user.username];
+ const q=`SELECT a.competency,COUNT(a.id) attempts,COALESCE(AVG(a.correct)*100,0) accuracy,
+  COALESCE(AVG(a.mastery)*100,0) mastery
+  FROM attempts a JOIN enrollments en ON en.learner_id=a.learner_id
+  JOIN classes c ON c.id=en.class_id WHERE 1=1${where}
+  GROUP BY a.competency ORDER BY mastery ASC`;
+ db.all(q,params,(e,rows)=>e?res.status(500).json({error:e.message}):res.json(rows||[]));
+});
+
+app.get("/api/intervention/:learnerId",auth,requireRole("teacher","admin"),(req,res)=>{
+ db.all(`SELECT competency,COUNT(*) attempts,COALESCE(AVG(correct)*100,0) accuracy,COALESCE(AVG(mastery)*100,0) mastery
+ FROM attempts WHERE learner_id=? GROUP BY competency ORDER BY mastery ASC`,[req.params.learnerId],(e,rows)=>{
+  if(e)return res.status(500).json({error:e.message});
+  const rec=(rows||[]).map(x=>{
+   const m=x.mastery;
+   let level="ENRICHMENT",action="Move to mixed application and challenge items.";
+   if(m<45){level="INTENSIVE";action="Return to prerequisite skill, use worked examples, manipulatives/visuals, then guided practice."}
+   else if(m<70){level="DEVELOPING";action="Use short targeted practice with immediate feedback and gradually increase complexity."}
+   return {...x,level,action};
+  });
+  res.json({learnerId:req.params.learnerId,recommendations:rec});
+ });
+});
+
+function gradeRules(grade){
+ grade=Number(grade)||1;
+ if(grade<=1)return {maxDigits:1,pairs:["1x1"],operations:["addition","subtraction","multiplication","division"]};
+ if(grade===2)return {maxDigits:2,pairs:["1x1","2x1","2x2"],operations:["addition","subtraction","multiplication","division"]};
+ return {maxDigits:3,pairs:["1x1","2x1","2x2","3x1","3x2","3x3"],operations:["addition","subtraction","multiplication","division"]};
 }
-const EN_ONES={zero:0,one:1,two:2,three:3,four:4,five:5,six:6,seven:7,eight:8,nine:9,ten:10,eleven:11,twelve:12,thirteen:13,fourteen:14,fifteen:15,sixteen:16,seventeen:17,eighteen:18,nineteen:19};
-const EN_TENS={twenty:20,thirty:30,forty:40,fifty:50,sixty:60,seventy:70,eighty:80,ninety:90};
-const EN_SCALES={hundred:100,thousand:1000,million:1000000};
-function wordsToNumberEN(text){
- text=text.toLowerCase().replace(/-/g," ").replace(/\band\b/g," ").trim();
- const words=text.split(/\s+/).filter(Boolean);
- if(!words.length)return null;
- let total=0,current=0,found=false;
- for(const w of words){
-  if(w in EN_ONES){current+=EN_ONES[w];found=true}
-  else if(w in EN_TENS){current+=EN_TENS[w];found=true}
-  else if(w==="hundred"){current=(current||1)*100;found=true}
-  else if(w in EN_SCALES){total+=(current||1)*EN_SCALES[w];current=0;found=true}
+function makeAdaptiveItem(grade,operation,mastery,streak=0){
+ const r=gradeRules(grade), m=Number(mastery)||0;
+ let pair=m<45?"1x1":m<70?(r.pairs[Math.max(0,r.pairs.length-2)]||"2x2"):(r.pairs[r.pairs.length-1]||"3x3");
+ if(streak>=2 && r.pairs.length>1) pair=r.pairs[Math.min(r.pairs.indexOf(pair)+1,r.pairs.length-1)];
+ const [aDigits,bDigits]=pair.split("x").map(Number);
+ const rand=n=>Math.floor(Math.random()*Math.pow(10,n-1))+Math.pow(10,n-1);
+ let a=rand(aDigits),b=rand(bDigits),answer=0;
+ if(operation==="addition"){answer=a+b}
+ else if(operation==="subtraction"){if(a<b)[a,b]=[b,a];answer=a-b}
+ else if(operation==="multiplication"){answer=a*b}
+ else {b=Math.max(1,b);a=b*rand(Math.max(1,aDigits));answer=a/b}
+ return {grade,operation,pair,a,b,answer,masteryBand:m<45?"intensive":m<70?"developing":"enrichment"};
+}
+app.get("/api/curriculum/:grade",auth,requireRole("teacher","admin"),(req,res)=>res.json(gradeRules(req.params.grade)));
+app.post("/api/adaptive-item",auth,requireRole("teacher","admin"),(req,res)=>{
+ const b=req.body||{},item=makeAdaptiveItem(b.grade,b.operation||"addition",b.mastery,b.streak||0);res.json(item);
+});
+
+function analyzeMisconception(op,a,b,answer){
+ const n=Number(answer);
+ const correct=op==="addition"?a+b:op==="subtraction"?a-b:op==="multiplication"?a*b:a/b;
+ const out=[];
+ if(op==="addition" && n===a-b) out.push("operation_confusion");
+ if(op==="subtraction" && n===a+b) out.push("subtraction_as_addition");
+ if(op==="multiplication" && n===a+b) out.push("multiplication_as_addition");
+ if(op==="division" && n===a*b) out.push("division_as_multiplication");
+ if(Number.isFinite(n) && Math.abs(n-Math.round(n))<1e-9 && n!==correct){
+   if(op==="subtraction" && Math.abs(n)===Math.abs(a-b)) out.push("sign_or_order_error");
+   else if(op==="multiplication" && String(n).includes("0")) out.push("place_value_error");
+   else out.push("calculation_error");
  }
- total+=current;
- return found?total:null;
+ return {correct,misconceptions:[...new Set(out)]};
 }
-const FIL_ONES={isa:1,dalawa:2,dalawang:2,tatlo:3,tatlong:3,apat:4,lima:5,limang:5,anim:6,pito:7,pitong:7,walo:8,walong:8,siyam:9};
-const FIL_TEENS={"labing isa":11,labinisa:11,labindalawa:12,"labing dalawa":12,labintatlo:13,"labing tatlo":13,"labing apat":14,labinapat:14,labinlima:15,"labing lima":15,"labing anim":16,labinganim:16,labimpito:17,"labing pito":17,labingpito:17,labingwalo:18,"labing walo":18,labinsiyam:19,"labing siyam":19};
-const FIL_TENS={sampu:10,dalawampu:20,dalawampung:20,tatlumpu:30,tatlumpung:30,apatnapu:40,apatnapung:40,limampu:50,limampung:50,animnapu:60,animnapung:60,pitumpu:70,pitumpung:70,walumpu:80,walumpung:80,siyamnapu:90,siyamnapung:90};
-const FIL_SCALES={raan:100,daan:100,raang:100,daang:100,libo:1000,libong:1000};
-function wordsToNumberFIL(text){
- let t=" "+text+" ";
- t=t.replace(/'t\b/g," at ");
- const teenEntries=Object.entries(FIL_TEENS).sort((a,b)=>b[0].length-a[0].length);
- for(const [phrase,val] of teenEntries){
-  const re=new RegExp("\\b"+phrase.replace(/\s+/g,"\\s+")+"\\b","g");
-  t=t.replace(re," "+val+" ");
- }
- const words=t.trim().split(/\s+/).filter(Boolean);
- if(!words.length)return null;
- let total=0,current=0,found=false;
- for(const w of words){
-  if(/^\d+$/.test(w)){current+=parseInt(w,10);found=true;continue}
-  if(w==="at")continue;
-  if(w in FIL_ONES){current+=FIL_ONES[w];found=true}
-  else if(w in FIL_TENS){current+=FIL_TENS[w];found=true}
-  else if(w in FIL_SCALES){current=(current||1)*FIL_SCALES[w];total+=current;current=0;found=true}
- }
- total+=current;
- return found?total:null;
-}
-function wordsToNumber(text){
- text=(text||"").toLowerCase().trim();
- let n=wordsToNumberEN(text);
- if(n===null)n=wordsToNumberFIL(text);
- return n;
-}
-function extractNumber(t){
- t=(t||"").trim();
- const m=t.match(/-?\d+(\.\d+)?/);
- if(m)return m[0];
- const n=wordsToNumber(t);
- return n!==null?String(n):t;
-}
-const NOISE_MSG="🔇 Medyo maingay yata sa paligid — hindi klaro narinig. Subukan ulit sa mas tahimik na lugar, o i-type na lang ang sagot.";
-const LOW_CONF=0.5;
-let activeMic=null;
-function micToAnswer(inputSel,statusSel,autoSubmit,btnSel,onSubmit){
- btnSel=btnSel||"#micAns";
- // Toggle: if already listening, stop it
- if(activeMic){try{activeMic.stop()}catch(e){}activeMic=null;return}
- const SR2=window.SpeechRecognition||window.webkitSpeechRecognition;
- if(!SR2){if(statusSel)$(statusSel).textContent="Speech recognition is not supported. Type your answer instead.";return}
- const rec=new SR2();rec.lang=$("#voiceLang")?.value||"en-PH";rec.interimResults=true;rec.continuous=false;rec.maxAlternatives=3;
- activeMic=rec;
- let gotResult=false,isNoisy=false;
- rec.onstart=()=>{if(statusSel){$(statusSel).textContent="🎤 Listening... tap 🎤 again to stop";$(statusSel).style.color="#28bd60"}
-  $(btnSel).style.background="#28bd60";$(btnSel).textContent="⏹ Stop"};
- rec.onresult=e=>{
-  const res=e.results[e.results.length-1];
-  const t=res[0].transcript,conf=res[0].confidence;
-  const val=extractNumber(t);$(inputSel).value=val;
-  if(res.isFinal){
-   gotResult=true;
-   const isNumeric=/^-?\d+(\.\d+)?$/.test(val);
-   if(!isNumeric||(typeof conf==="number"&&conf>0&&conf<LOW_CONF)){
-    isNoisy=true;
-    if(statusSel){$(statusSel).textContent=NOISE_MSG;$(statusSel).style.color="#d9822b"}
-   }else if(statusSel){$(statusSel).textContent=(val!==t?`Heard: "${t}" → ${val}`:`Heard: "${t}"`);$(statusSel).style.color="#687583"}
-  }else if(statusSel)$(statusSel).textContent=`🎤 Hearing: "${t}"...`;
+function scaffoldingFor(m){
+ const map={
+  operation_confusion:"Let's identify the operation first. Ask: Are we combining, taking away, making equal groups, or sharing?",
+  subtraction_as_addition:"Use a take-away model and compare the starting number with the amount removed.",
+  multiplication_as_addition:"Build equal groups and count the groups before writing the multiplication sentence.",
+  division_as_multiplication:"Use sharing/grouping: determine how many equal groups fit in the total.",
+  sign_or_order_error:"Rewrite the subtraction with the larger starting number first and check the direction.",
+  place_value_error:"Align digits by place value before calculating.",
+  calculation_error:"Use a worked example, then solve one similar item with immediate feedback."
  };
- rec.onerror=e=>{if(statusSel){$(statusSel).textContent=e.error==="not-allowed"?"Mic blocked. Check browser settings.":"Couldn't hear. Tap 🎤 again.";$(statusSel).style.color="#687583"}};
- rec.onend=()=>{activeMic=null;$(btnSel).style.background="";$(btnSel).textContent="🎤 Speak Answer";
-  if(gotResult&&autoSubmit&&!isNoisy){setTimeout(()=>{if($(inputSel).value.trim())onSubmit&&onSubmit()},300)}
-  else if(!gotResult&&statusSel&&$(statusSel).textContent.includes("Listening")){$(statusSel).textContent="No speech detected. Tap 🎤 and speak clearly.";$(statusSel).style.color="#687583"}};
- try{rec.start()}catch(e){activeMic=null;if(statusSel)$(statusSel).textContent="Could not start mic. Try again."}
+ return map[m]||"Use a short worked example followed by one guided practice item.";
 }
-$("#hearQ").onclick=()=>speakText(toSpeechText(state.q?.q)+"?","#exVoiceStatus","🔊 Reading the problem...");
-$("#micAns").onclick=()=>micToAnswer("#answer","#exVoiceStatus",true,"#micAns",()=>$("#check").click());
+app.post("/api/analyze-response",auth,requireRole("teacher","admin"),(req,res)=>{
+ const b=req.body||{},x=analyzeMisconception(b.operation||"addition",+b.a,+b.b,b.answer);
+ res.json({...x,scaffolds:x.misconceptions.map(scaffoldingFor)});
+});
 
-function setBotState(emotion="idle", text="Ready to learn"){
- const bot=$("#bot"); if(!bot)return;
- bot.classList.remove("idle","think","encourage","celebrate","happy","speaking");
- bot.classList.add(["happy","celebrate"].includes(emotion)?"celebrate":emotion==="think"?"think":emotion==="encourage"?"encourage":"idle");
- if(emotion==="happy")bot.classList.add("happy");
- $("#botState").textContent=text;
-}
-// Cloud TTS via Groq Orpheus
-async function cloudSpeak(text,voice){
+app.post("/api/tutor/dialogue",auth,requireRole("teacher","admin"),(req,res)=>{
+ const b=req.body||{},grade=+b.grade||1,problem=b.problem||"",student=b.studentResponse||"";
+ const correct=String(b.correctAnswer??"");
+ const answer=String(b.answer??"");
+ let intent="practice",reply="",nextAction="probe";
+ if(!answer && !student){reply=`Let's solve ${problem} together. What do you think we should do first?`;nextAction="ask-first-step";}
+ else if(answer && correct && answer===correct){reply="Nice work. Tell me how you got your answer.";nextAction="ask-reasoning";}
+ else if(student){reply="I see your idea. Let's check one step at a time. What did you do first, and why?";nextAction="probe-reasoning";}
+ else {reply="That's okay. Let's use a smaller step. Can you show me what you tried?";nextAction="scaffold";}
+ res.json({grade,problem,intent,reply,nextAction,studentResponse:student});
+});
+
+app.post("/api/voice/session",auth,requireRole("teacher","admin"),(req,res)=>{
+ const b=req.body||{};
+ res.json({
+  supported:true,
+  mode:"browser_voice",
+  language:b.language||"en-PH",
+  input:"speech-to-text",
+  output:"text-to-speech",
+  note:"Audio is processed client-side in this foundation; persistent audio storage is disabled."
+ });
+});
+app.get("/api/health",(req,res)=>res.json({status:"ok",version:"11.0",database:"sqlite",time:now(),aiConfigured:!!AI_KEY,aiModel:AI_MODEL}));
+app.get("/api/curriculum-map",(req,res)=>{let g=Math.max(1,Math.min(10,+req.query.grade||1));res.json(CURRICULUM[`grade_${g}`]||{})});
+app.get("/api/curriculum",(req,res)=>{let g=Math.max(1,Math.min(10,+req.query.grade||1));res.json({grade:g,patterns:PATTERNS(g),competencies:COMP[g],labels:LABEL})});
+app.post("/api/learners",(req,res)=>{let b=req.body||{},learner={id:id(),name:b.name||"Learner",grade:+b.grade||1,section:b.section||"",school:b.school||"",created_at:now()};db.run("INSERT INTO learners VALUES(?,?,?,?,?,?)",Object.values(learner),e=>{if(e)return res.status(500).json({error:e.message});sheetsAddLearner(learner);res.json(learner)})});
+// Unauthenticated by design (same trade-off as POST /api/learners above): students look themselves up
+// by name to resume on a new device without a login system. Matches are case-insensitive/trimmed.
+app.get("/api/learners/find",(req,res)=>{
+ const nameQ=String(req.query.name||"").trim();
+ if(!nameQ)return res.json([]);
+ db.all("SELECT * FROM learners WHERE LOWER(TRIM(name))=LOWER(?) ORDER BY created_at DESC LIMIT 10",[nameQ],(e,rows)=>e?res.status(500).json({error:e.message}):res.json(rows||[]));
+});
+app.get("/api/learners",auth,requireRole("teacher","admin"),(req,res)=>db.all("SELECT * FROM learners ORDER BY created_at DESC",(e,r)=>e?res.status(500).json({error:e.message}):res.json(r)));
+app.get("/api/learners/:id/summary",(req,res)=>db.all("SELECT competency,COUNT(*) attempts,SUM(correct) correct,AVG(mastery) mastery,MAX(created_at) last_seen FROM attempts WHERE learner_id=? GROUP BY competency",[req.params.id],(e,r)=>e?res.status(500).json({error:e.message}):res.json(r)));
+app.get("/api/learners/:id/profile",(req,res)=>{
+ db.get("SELECT * FROM learners WHERE id=?",[req.params.id],(e,learner)=>{
+  if(e||!learner)return res.status(404).json({error:"Learner not found"});
+  db.all("SELECT competency,COUNT(*) attempts,SUM(correct) correct,AVG(mastery) mastery,MAX(difficulty) level FROM attempts WHERE learner_id=? GROUP BY competency ORDER BY mastery ASC",[req.params.id],(e2,skills)=>{
+   db.all("SELECT competency,question,expected,answer,correct,mastery,created_at FROM attempts WHERE learner_id=? ORDER BY created_at DESC LIMIT 20",[req.params.id],(e3,recent)=>{
+    const weakSkills=(skills||[]).filter(s=>s.mastery<0.45).map(s=>s.competency);
+    const strongSkills=(skills||[]).filter(s=>s.mastery>=0.85).map(s=>s.competency);
+    const totalAttempts=(skills||[]).reduce((a,s)=>a+s.attempts,0);
+    const totalCorrect=(skills||[]).reduce((a,s)=>a+s.correct,0);
+    const overallAccuracy=totalAttempts?totalCorrect/totalAttempts:0;
+    const avgMastery=(skills||[]).length?(skills||[]).reduce((a,s)=>a+s.mastery,0)/skills.length:0.5;
+    const recentMistakes=(recent||[]).filter(r=>!r.correct).slice(0,5);
+    res.json({learner,skills:skills||[],weakSkills,strongSkills,totalAttempts,overallAccuracy,avgMastery,recentMistakes,recentActivity:recent||[]});
+   });
+  });
+ });
+});
+// Groq Cloud TTS (natural voice)
+app.post("/api/speak",async(req,res)=>{
+ const {text,voice}=req.body||{};
+ if(!text)return res.status(400).json({error:"No text"});
+ if(!AI_KEY){return res.status(503).json({error:"No API key"})}
+ const validVoices=["tara","leah","jess","leo","dan","mia","zac","zoe"];
+ const useVoice=validVoices.includes(voice)?voice:"tara";
  try{
-  const r=await fetch("/api/speak",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text,voice})});
-  if(!r.ok)throw Error(r.status);
-  const blob=await r.blob();
-  const url=URL.createObjectURL(blob);
-  const audio=new Audio(url);
-  audio.onended=()=>{URL.revokeObjectURL(url);const bot=$("#bot");bot.classList.remove("speaking");bot.classList.add("idle");$("#botState").textContent="Ready for your answer"};
-  audio.onerror=()=>{URL.revokeObjectURL(url)};
-  const bot=$("#bot");bot.classList.remove("idle","think","encourage","celebrate");bot.classList.add("speaking");$("#botState").textContent="Speaking...";
-  await audio.play();
-  return true;
- }catch(e){return false}
-}
-function browserSpeak(text){
- if(!("speechSynthesis" in window))return;
- window.speechSynthesis.cancel();
- const lang=$("#voiceLang").value||"en-PH";
- const u=new SpeechSynthesisUtterance(text);
- const v=pickVoice(lang);if(v)u.voice=v;
- const sel=$("#voiceGender")?.value||"tara";
- const isMale=sel==="browser-male";
- u.lang=lang;u.rate=0.88;u.pitch=isMale?0.9:1.05;u.volume=1.0;
- const bot=$("#bot");
- u.onstart=()=>{bot.classList.remove("idle","think","encourage","celebrate");bot.classList.add("speaking");$("#botState").textContent="Speaking..."};
- u.onend=()=>{bot.classList.remove("speaking");bot.classList.add("idle");$("#botState").textContent="Ready for your answer"};
- u.onerror=()=>{bot.classList.remove("speaking");bot.classList.add("idle")};
- window.speechSynthesis.speak(u);
-}
-async function speakTutor(text){
- if(!text)return;
- if(!$("#voiceEnabled").checked){if("speechSynthesis" in window)window.speechSynthesis.cancel();return}
- const voice=$("#voiceGender")?.value||"tara";
- if(voice.startsWith("browser")){browserSpeak(text);return}
- const ok=await cloudSpeak(text,voice);
- if(!ok)browserSpeak(text);
-}
+  console.log("[TTS] Requesting voice:",useVoice,"text:",text.substring(0,50)+"...");
+  const r=await fetch("https://api.groq.com/openai/v1/audio/speech",{
+   method:"POST",
+   headers:{"Content-Type":"application/json","Authorization":`Bearer ${AI_KEY}`},
+   body:JSON.stringify({model:"canopylabs/orpheus-v1-english",input:text,voice:useVoice,response_format:"wav"})
+  });
+  if(!r.ok){const err=await r.text();console.log("[TTS] Error:",r.status,err);return res.status(502).json({error:"TTS error: "+r.status})}
+  res.set({"Content-Type":"audio/wav","Cache-Control":"no-cache"});
+  const buf=Buffer.from(await r.arrayBuffer());
+  console.log("[TTS] Success, size:",buf.length);
+  res.send(buf);
+ }catch(e){console.log("[TTS] Failed:",e.message);res.status(502).json({error:"TTS failed"})}
+});
 
-async function talkToTutor(message){
- const payload={grade:state.grade,competency:state.competency,question:state.q?.q||"",expected:state.q?.a||"",answer:$("#answer").value,message,
- mastery:skill.mastery,recent:skill.recent||[],correct:state.q?String($("#answer").value).trim()===String(state.q.a).trim():false};
- const r=await(await fetch("/api/conversation",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)})).json();
- lastTutorSpeech=r.speech||r.reply||"";
-setBotState(r.emotion||"idle", r.nextQuestion||"Tutor responded.");
-speakTutor(lastTutorSpeech);
-return r;
-}
-
-// === Conversational Chat System ===
-let chatConversation=[];
-function addChatMsg(role,text){
- const box=$("#chatHistory");
- const div=document.createElement("div");
- div.className=role==="user"?"msg user-msg":"msg bot-msg";
- div.textContent=text;
- box.appendChild(div);
- box.scrollTop=box.scrollHeight;
-}
-function showTyping(){
- const box=$("#chatHistory");
- const div=document.createElement("div");
- div.className="msg typing-msg";div.id="typingIndicator";
- div.textContent="MathBuddy is thinking...";
- box.appendChild(div);box.scrollTop=box.scrollHeight;
-}
-function removeTyping(){const t=document.getElementById("typingIndicator");if(t)t.remove()}
-
-async function sendChat(){
- const input=$("#chatInput"),text=input.value.trim();
- if(!text)return;
- input.value="";
- addChatMsg("user",text);
- showTyping();
- setBotState("think","Thinking...");
- try{
-  chatConversation.push({role:"user",content:text});
-  const recentHistory=chatConversation.slice(-10);
-  const payload={
-   grade:state.grade,competency:state.competency,
-   question:state.q?.q||"",expected:state.q?.a||"",
-   answer:"",message:text,
-   mastery:skill.mastery,recent:skill.recent||[],correct:false,
-   chatHistory:recentHistory,
-   learnerProfile:learnerProfile?{name:learnerProfile.learner?.name,overallAccuracy:learnerProfile.overallAccuracy,avgMastery:learnerProfile.avgMastery,weakSkills:learnerProfile.weakSkills,strongSkills:learnerProfile.strongSkills,recentMistakes:learnerProfile.recentMistakes,totalAttempts:learnerProfile.totalAttempts}:null
-  };
-  const r=await(await fetch("/api/conversation",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)})).json();
-  const reply=r.reply||r.speech||"I'm here to help! Try asking me a math question.";
-  removeTyping();
-  addChatMsg("bot",reply);
-  chatConversation.push({role:"assistant",content:reply});
-  setBotState(r.emotion||"idle",r.nextQuestion||"Your turn");
-  speakTutor(r.speech||reply);
- }catch(e){
-  removeTyping();
-  addChatMsg("bot","Sorry, I couldn't connect right now. Try again!");
-  setBotState("idle","Your turn");
- }
-}
-$("#chatSend").onclick=sendChat;
-$("#chatInput").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();sendChat()}});
-let activeChatMic=null,chatMicStopRequested=false,chatMicFinalText="",chatMicGotResult=false,chatMicNoisy=false;
-function startChatMicSession(){
- const SR2=window.SpeechRecognition||window.webkitSpeechRecognition;
- if(!SR2){$("#chatVoiceStatus").textContent="Speech recognition not supported.";return}
- const rec=new SR2();rec.lang=$("#voiceLang")?.value||"en-PH";rec.interimResults=true;rec.continuous=true;
- activeChatMic=rec;
- rec.onstart=()=>{$("#chatVoiceStatus").textContent="🎤 Listening... tap 🎤 again to stop";$("#chatVoiceStatus").style.color="#28bd60";$("#chatMic").style.background="#28bd60";$("#chatMic").textContent="⏹"};
- rec.onresult=e=>{
-  let interim="";
-  for(let i=e.resultIndex;i<e.results.length;i++){
-   const res=e.results[i];
-   if(res.isFinal){
-    chatMicFinalText+=res[0].transcript+" ";chatMicGotResult=true;
-    const conf=res[0].confidence;
-    if(typeof conf==="number"&&conf>0&&conf<LOW_CONF)chatMicNoisy=true;
-   }else interim+=res[0].transcript;
-  }
-  const t=(chatMicFinalText+interim).trim();
-  $("#chatInput").value=t;
-  $("#chatVoiceStatus").textContent=`🎤 Hearing: "${t}"...`;
- };
- rec.onerror=e=>{if(e.error==="no-speech"||e.error==="aborted")return;
-  $("#chatVoiceStatus").textContent=e.error==="not-allowed"?"Mic blocked. Check browser settings.":"Couldn't hear that. Tap 🎤 again.";
-  $("#chatVoiceStatus").style.color="#687583"};
- rec.onend=()=>{
-  activeChatMic=null;
-  if(!chatMicStopRequested){
-   // Browser auto-ended the session (silence timeout) but user hasn't tapped stop yet — keep listening
-   try{startChatMicSession()}catch(e){}
-   return;
-  }
-  $("#chatMic").style.background="";$("#chatMic").textContent="🎤";
-  const t=$("#chatInput").value.trim();
-  if(chatMicNoisy){$("#chatVoiceStatus").textContent=NOISE_MSG;$("#chatVoiceStatus").style.color="#d9822b"}
-  else if(chatMicGotResult&&t){$("#chatVoiceStatus").textContent=`Heard: "${t}" — press Send to submit`;$("#chatVoiceStatus").style.color="#687583"}
-  else{$("#chatVoiceStatus").textContent="No speech detected. Tap 🎤 and speak clearly.";$("#chatVoiceStatus").style.color="#687583"}
-  chatMicFinalText="";chatMicGotResult=false;chatMicNoisy=false;
- };
- try{rec.start()}catch(e){activeChatMic=null;$("#chatVoiceStatus").textContent="Could not start mic. Try again."}
-}
-$("#chatMic").onclick=()=>{
- // Toggle: if already listening, mark as user-requested stop — this lets it finalize and send
- if(activeChatMic){chatMicStopRequested=true;try{activeChatMic.stop()}catch(e){}return}
- chatMicStopRequested=false;chatMicFinalText="";chatMicGotResult=false;chatMicNoisy=false;
- startChatMicSession();
-};
-
-
-function defaultSkill(){return{attempts:0,correct:0,mastery:.5,recent:[],level:1}}
-let learner=null,learnerProfile=null,skillByOp={addition:defaultSkill(),subtraction:defaultSkill(),multiplication:defaultSkill(),division:defaultSkill()},skill=skillByOp.addition,state={grade:1,operation:"addition",competency:"addition_1x1",q:null,itemsThisLevel:1,prevLevel:1,maxLevel:6};
-function $(x){return document.querySelector(x)||document.createElement("div")}
-async function loadLearnerProfile(){
- if(!learner?.id)return;
- try{
-  const r=await fetch(`/api/learners/${learner.id}/profile`);
-  if(r.ok){learnerProfile=await r.json();
-   const summary=learnerProfile.skills||[];
-   const byOp={};
-   summary.forEach(s=>{const op=s.competency.split("_")[0];const b=byOp[op]||(byOp[op]={attempts:0,correct:0,masterySum:0,level:1});b.attempts+=s.attempts||0;b.correct+=s.correct||0;b.masterySum+=(s.mastery||0)*(s.attempts||0);if((s.level||1)>b.level)b.level=s.level||1});
-   Object.keys(byOp).forEach(op=>{const b=byOp[op],sk=skillByOp[op]||(skillByOp[op]=defaultSkill());sk.attempts=b.attempts;sk.correct=b.correct;sk.mastery=b.attempts?b.masterySum/b.attempts:.5;sk.level=b.level});
-   skill=skillByOp[state.operation]||(skillByOp[state.operation]=defaultSkill());
-   render();
-   console.log("[MathBuddy] Learner profile loaded:",learnerProfile.learner.name,"mastery:",Math.round(learnerProfile.avgMastery*100)+"%");
-  }
- }catch(e){console.log("[MathBuddy] Could not load profile")}
-}
-function saveLearner(){if(learner)localStorage.setItem("mathbuddy_learner",JSON.stringify(learner))}
-function restoreLearner(){try{const s=localStorage.getItem("mathbuddy_learner");if(s){learner=JSON.parse(s);return true}}catch(e){}return false}
-async function curriculum(){let c=await (await fetch(`/api/curriculum?grade=${state.grade}`)).json();$("#comps").innerHTML=c.competencies.map(x=>`<div class="comp ${x===state.competency?"active":""}" data-c="${x}">${c.labels[x]||x}</div>`).join("");document.querySelectorAll(".comp").forEach(e=>e.onclick=()=>{document.querySelectorAll(".comp").forEach(x=>x.classList.remove("active"));e.classList.add("active");state.competency=e.dataset.c;const op=e.dataset.c.split("_")[0];if(op!==state.operation){state.operation=op;skill=skillByOp[op]||(skillByOp[op]=defaultSkill());state.itemsThisLevel=1;state.prevLevel=skill.level||1;render()}newQ()})}
-async function newQ(){let q=await(await fetch("/api/question",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({grade:state.grade,operation:state.operation,competency:state.competency,skillState:skill,itemNumber:state.itemsThisLevel})})).json();state.q=q;if(q.maxLevel)state.maxLevel=q.maxLevel;setBotState("idle","Your turn");
- if(q.isWordProblem){$("#q").textContent=q.q;$("#q").style.fontSize="16px";$("#q").style.textAlign="left"}
- else{$("#q").textContent=q.q+" = ?";$("#q").style.fontSize="42px";$("#q").style.textAlign="center"}
- $("#title").textContent=q.isWordProblem?q.competencyLabel+" (Word Problem)":q.competencyLabel;$("#answer").value="";$("#feedback").textContent=""}
-function render(){let a=skill.attempts?skill.correct/skill.attempts:0;$("#mastery").textContent=Math.round(skill.mastery*100)+"%";$("#accuracy").textContent=Math.round(a*100)+"%";$("#level").textContent=`${skill.level}/${state.maxLevel}`;$("#fill").style.width=(skill.mastery*100)+"%";const item=Math.min(state.itemsThisLevel||1,15);const setNum=Math.min(3,Math.ceil(item/5));const itemInSet=item-((setNum-1)*5);const isWP=(item===5||item===10||item===15);$("#levelInfo").textContent=`Level ${skill.level||1}/${state.maxLevel} · Set ${setNum}/3 · Item ${itemInSet}/5${isWP?" 📝":""}`;}
-async function createNewLearner(name,grade){
- const section=$("#section")?.value?.trim()||"";
- const district=$("#district")?.value||"";
- let r=await(await fetch("/api/learners",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name,grade,section,school:district})})).json();
- await selectLearner(r,true);
-}
-async function selectLearner(r,isNew){
- learner=r;saveLearner();
- state.grade=r.grade||state.grade;$("#grade").value=state.grade;
- skillByOp={addition:defaultSkill(),subtraction:defaultSkill(),multiplication:defaultSkill(),division:defaultSkill()};skill=skillByOp[state.operation];state.itemsThisLevel=1;state.prevLevel=1;
- $("#reg").textContent=`✅ ${isNew?"Welcome":"Welcome back"}, ${r.name}${r.school?" — "+r.school:""}${r.section?" · Section "+r.section:""} — ID: ${r.id}`;
- render();loadDash();teacherDashboard();
- curriculum().then(newQ);
- if(isNew){
-  addChatMsg("bot",`Hi ${r.name}! I'm MathBuddy. Let's learn math together! Try answering the question on the right, or ask me anything.`);
- } else {
-  await loadLearnerProfile();
-  const pct=learnerProfile?Math.round((learnerProfile.avgMastery||0)*100):null;
-  addChatMsg("bot",pct!==null?`Welcome back, ${r.name}! Last time your average mastery was ${pct}%. Let's pick up where you left off.`:`Welcome back, ${r.name}! Let's continue learning.`);
- }
-}
-$("#register").onclick=async()=>{
- const name=$("#name").value.trim(),grade=+$("#grade").value||1;
- if(!name){$("#reg").textContent="Please type your name first.";return}
- state.grade=grade;
- $("#reg").textContent="Checking for an existing record...";
- let rows=[];
- try{rows=await(await fetch(`/api/learners/find?name=${encodeURIComponent(name)}`)).json()}catch(e){rows=[]}
- if(Array.isArray(rows)&&rows.length===1){await selectLearner(rows[0],false);return}
- if(Array.isArray(rows)&&rows.length>1){
-  $("#reg").innerHTML="We found more than one learner with that name. Please select yours:<br>"
-   +rows.map(r=>`<button class="dark" type="button" style="margin:3px 0;width:100%;text-align:left" data-id="${esc(r.id)}">${esc(r.name)} — Grade ${r.grade}${r.section?(" · "+esc(r.section)):""} (ID: ${esc(r.id)})</button>`).join("")
-   +`<button class="green" type="button" id="newInstead" style="margin-top:6px;width:100%">None of these — create new record</button>`;
-  document.querySelectorAll("#reg button[data-id]").forEach(b=>b.onclick=()=>{const m=rows.find(x=>x.id===b.dataset.id);if(m)selectLearner(m,false)});
-  $("#newInstead").onclick=()=>createNewLearner(name,grade);
-  return;
- }
- await createNewLearner(name,grade);
-};
-$("#grade").onchange=()=>{state.grade=+$("#grade").value;state.competency=`addition_${state.grade===1?"1x1":state.grade===2?"2x1":"3x1"}`;state.operation="addition";skillByOp={addition:defaultSkill(),subtraction:defaultSkill(),multiplication:defaultSkill(),division:defaultSkill()};skill=skillByOp.addition;state.itemsThisLevel=1;state.prevLevel=1;state.maxLevel=6;curriculum().then(newQ);loadMap();render()};
-$("#check").onclick=async()=>{let ans=$("#answer").value.trim();if(!ans||!state.q)return;let correct=String(ans).toLowerCase()===String(state.q.a).toLowerCase();let payload={learnerId:learner?.id||"demo",learnerName:learner?.name||"",competency:state.competency,question:state.q.q,expected:state.q.a,answer:ans,correct,difficulty:state.q.difficulty,skillState:skill};
-let r=await queueOrSendAttempt(payload);skill=r.skillState||skill;skillByOp[state.operation]=skill;let newLevel=skill.level||1;let leveledUp=newLevel>state.prevLevel,leveledDown=newLevel<state.prevLevel;
-if(leveledUp||leveledDown){state.itemsThisLevel=1}else{state.itemsThisLevel=(state.itemsThisLevel||0)+1}
-const BATCH=15;const cap=state.maxLevel||6;let batchForced=false,mastered=false;
-if(!leveledUp&&!leveledDown&&state.itemsThisLevel>=BATCH){
- state.itemsThisLevel=1;batchForced=true;
- if(skill.mastery>=.85){
-  if((skill.level||1)>=cap){mastered=true}
-  else{skill.level=Math.min(cap,(skill.level||1)+1);leveledUp=true}
- }
- else if(skill.mastery<.45){skill.level=Math.max(1,(skill.level||1)-1);leveledDown=true}
- newLevel=skill.level||1;
-}
-state.prevLevel=newLevel;render();let msg=correct?randomFrom(PRAISE):randomFrom(ENCOURAGE);
-if(mastered){$("#feedback").textContent=`🏆 ${msg} Competency mastered!`;addChatMsg("bot",`🏆 Excellent! You've mastered ${state.competency.replace(/_/g," ")} at the highest level for Grade ${state.grade}. Try the next competency or move to a higher grade!`);setBotState("celebrate","Mastered!");speakText(`Congratulations! You've mastered this competency. Try the next one or move to a higher grade!`,"#exVoiceStatus");}
-else if(leveledUp){$("#feedback").textContent=`✓ ${msg} 🎉 Level Up! Now Level ${newLevel}/${cap}.`;addChatMsg("bot",batchForced?`🎉 Batch complete! Mastery is strong — moving to Level ${newLevel}. Keep it up!`:`🎉 Level Up! Now Level ${newLevel}. Keep going!`);setBotState("celebrate",`Level ${newLevel}/${cap}`);speakText(batchForced?`Batch complete! Moving to level ${newLevel}.`:`${msg} Level up! Now level ${newLevel}.`,"#exVoiceStatus");}
-else if(leveledDown){$("#feedback").textContent=`${msg} Let's build up this level a bit more.`;addChatMsg("bot",batchForced?`Batch complete. Let's strengthen the basics — back to Level ${newLevel}.`:"Let's practice a bit more at this level.");setBotState("encourage","Let's build this up");speakText(batchForced?`Batch complete. Let's go back to level ${newLevel}.`:msg,"#exVoiceStatus");}
-else if(batchForced){$("#feedback").textContent=`${msg} 🔄 Batch complete — Level ${newLevel}/${cap} maintained.`;addChatMsg("bot",`Good effort! Mastery at ${Math.round(skill.mastery*100)}%. Let's do another round at Level ${newLevel}.`);setBotState("encourage",`Level ${newLevel}/${cap} · new batch`);speakText(`Batch complete. Let's keep practicing at level ${newLevel}.`,"#exVoiceStatus");}
-else if(correct){$("#feedback").textContent=`✓ ${msg}`;addChatMsg("bot",`✓ ${msg} Can you explain how you got ${state.q.a}?`);speakText(msg,"#exVoiceStatus");}
-else{$("#feedback").textContent=`${msg} The answer is ${state.q.a}.`;addChatMsg("user",`My answer: ${ans}`);setBotState("think","Thinking...");
- talkToTutor(`I answered ${ans} but the correct answer is ${state.q.a}. Help me understand.`).then(r=>{if(r)addChatMsg("bot",r.reply||r.speech||"Let's work through this together.")});}
-if(batchForced){const batchAccuracy=skill.attempts?skill.correct/skill.attempts:0;showTrophy({name:learner?.name||$("#name").value.trim()||"Learner",accuracy:batchAccuracy,mastery:skill.mastery,competency:state.competency,grade:state.grade,mastered})}
-if(correct)setTimeout(newQ,900);loadDash();teacherDashboard()};
-$("#answer").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();$("#check").click()}});
-async function loadMap(){let g=state.grade;let d=await(await fetch(`/api/curriculum-map?grade=${g}`)).json();let out="";for(const [domain,items] of Object.entries(d.domains||{})){out+=`<div style="margin:8px 0"><b>${domain}</b>${items.map(x=>`<div style="padding:7px 10px;background:#eef2f0;border-radius:8px;margin:4px 0;font-size:12px"><b>${x.id}</b> ${x.label}</div>`).join("")}</div>`}$("#curriculumMap").innerHTML=out||"No mapping available."}
-async function loadDash(){let d=await(await fetch("/api/dashboard")).json();$("#dash").innerHTML=`Learners: <b>${d.learners}</b><br>Attempts: <b>${d.attempts}</b><br>Overall accuracy: <b>${Math.round(d.accuracy*100)}%</b><br>Average mastery: <b>${Math.round(d.averageMastery*100)}%</b><hr>Priority skills: ${(d.prioritySkills||[]).map(x=>`${x.competency} (${Math.round(x.mastery*100)}%)`).join(", ")||"No data yet"}`};
-
-let diagItems=[],diagIndex=0,diagResults=[];
-$("#runDiag").onclick=async()=>{diagItems=(await(await fetch(`/api/diagnostic/items?grade=10`)).json()).items;diagIndex=0;diagResults=[];showDiag()};
-function showDiag(){if(diagIndex>=diagItems.length){finishDiag();return}let x=diagItems[diagIndex];const isWP=x.isWordProblem;$("#diagBox").innerHTML=`<p style="font-size:12px;font-weight:900;color:#687583;margin:4px 0 0">Item ${diagIndex+1}/${diagItems.length}${isWP?" 📝 Word Problem":""}</p><div class="q" id="diagQ" style="${isWP?"font-size:16px;text-align:left":""}">${x.question||x.q}</div><div class="row" style="margin-bottom:9px"><button class="dark" type="button" onclick="hearDiagQ()">🔊 Hear Problem</button><button class="dark" type="button" id="micDiagBtn" onclick="micDiagAns()">🎤 Speak Answer</button></div><input id="diagAns" inputmode="numeric" placeholder="Answer" onkeydown="if(event.key==='Enter'){event.preventDefault();submitDiag()}"><button class="green" style="width:100%;margin-top:9px" onclick="submitDiag()">Check Answer</button><p id="diagFeedback"></p><p id="diagVoiceStatus" style="font-size:12px;color:#687583"></p>`;$("#diagAns").focus()}
-function hearDiagQ(){const x=diagItems[diagIndex];if(x)speakText(x.isWordProblem?(x.q||x.question):(toSpeechText(x.question||x.q)+"?"),"#diagVoiceStatus","🔊 Reading the problem...")}
-function micDiagAns(){micToAnswer("#diagAns","#diagVoiceStatus",true,"#micDiagBtn",()=>submitDiag())}
-function submitDiag(){let x=diagItems[diagIndex],a=$("#diagAns").value.trim(),expected=x.answer!==undefined?x.answer:x.a,c=String(a)===String(expected);diagResults.push({grade:x.grade,skill:x.skill,pattern:x.pattern,correct:c});let msg=c?randomFrom(PRAISE):randomFrom(ENCOURAGE);$("#diagFeedback").textContent=c?`✓ ${msg}`:msg;speakText(msg,null);diagIndex++;setTimeout(showDiag,900)}
-async function finishDiag(){let p=await(await fetch("/api/diagnostic/placement",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({grade:state.grade,results:diagResults})})).json();$("#diagBox").innerHTML=`<div style="background:#e9f7ed;padding:14px;border-radius:12px"><b>Recommended starting point: Grade ${p.recommendedGrade}</b><p>Confidence: ${Math.round(p.confidence*100)}%</p><p>Mastered sampled skills: ${p.masteredSkills}</p><p><b>Priority gaps:</b> ${(p.priorityGaps||[]).map(x=>`${x.skill} (${Math.round(x.accuracy*100)}%)`).join(", ")||"None identified"}</p><button class="green" onclick="applyPlacement(${p.recommendedGrade})">Apply Placement</button></div>`}
-function applyPlacement(g){state.grade=g;$("#grade").value=g;state.competency=`addition_${g===1?"1x1":g===2?"2x1":"3x1"}`;curriculum().then(newQ);loadMap();$("#chat").textContent=`Placement complete. We'll start at Grade ${g} and adapt from your evidence.`}
-
-function showTrophy({name,accuracy,mastery,competency,grade,mastered}){
- $("#trophyName").textContent=name;
- $("#trophySubtitle").textContent=mastered?`You've mastered ${(competency||"").replace(/_/g," ")}! 🎉`:`You completed a full batch of 15 items in ${(competency||"").replace(/_/g," ")}.`;
- $("#trophyAccuracy").textContent=Math.round((accuracy||0)*100)+"%";
- $("#trophyMastery").textContent=Math.round((mastery||0)*100)+"%";
- window._lastCertData={name,accuracy:accuracy||0,mastery:mastery||0,competency,grade,date:new Date()};
- $("#trophyModal").style.display="flex";
- speakText(`Congratulations ${name}! You completed 15 items.`,null);
-}
-$("#closeTrophy").onclick=()=>{$("#trophyModal").style.display="none"};
-function buildCertificateNode(d){
- const compLabel=(d.competency||"").replace(/_/g," ");
- const dateStr=d.date.toLocaleDateString();
- const nm=String(d.name||"");
- const nameSize=nm.length>26?36:nm.length>18?46:64;
- const wrap=document.createElement("div");
- wrap.style.cssText="position:fixed;left:-99999px;top:0;width:1000px;height:707px;";
- wrap.innerHTML=`
- <div style="width:1000px;height:707px;background:#fff;position:relative;overflow:hidden;font-family:'Nunito',sans-serif;box-sizing:border-box">
-  <img src="/certificate-bg.png" crossorigin="anonymous" style="position:absolute;left:0;top:0;width:1000px;height:707px;display:block;pointer-events:none">
-  <div style="position:relative;z-index:2;width:100%;height:100%">
-   <div style="position:absolute;left:179px;top:58px;width:643px;height:150px;display:flex;align-items:center;justify-content:center;font-family:'Baloo 2',sans-serif;font-weight:800;font-size:58px;color:#202f5a;letter-spacing:1px;text-align:center">CERTIFICATE</div>
-   <div style="position:absolute;left:259px;top:163px;width:482px;height:80px;display:flex;align-items:center;justify-content:center;font-family:'Baloo 2',sans-serif;font-weight:700;font-size:25px;color:#202f5a;letter-spacing:5px;text-align:center">OF ACHIEVEMENT</div>
-   <div style="position:absolute;left:290px;top:248px;width:419px;height:42px;display:flex;align-items:center;justify-content:center;font-family:'Baloo 2',sans-serif;font-weight:700;font-size:15px;color:#2a5f99;letter-spacing:1.5px;text-align:center">THIS AWARD IS PROUDLY PRESENTED TO:</div>
-   <div style="position:absolute;left:100px;top:290px;width:800px;height:138px;display:flex;align-items:center;justify-content:center;font-family:'Caveat',cursive;font-weight:700;font-size:${nameSize}px;color:#b4432d;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(nm)}</div>
-   <div style="position:absolute;left:150px;top:449px;width:700px;height:95px;display:flex;align-items:center;justify-content:center;font-family:'Nunito',sans-serif;font-weight:800;font-size:15px;color:#202f5a;text-align:center;line-height:1.55">For completing 15 practice items in <b>${esc(compLabel)}</b> — Grade ${d.grade}, with ${Math.round(d.accuracy*100)}% accuracy and ${Math.round(d.mastery*100)}% mastery. Keep learning, keep growing, and keep being awesome!</div>
-   <div style="position:absolute;left:0;top:558px;width:1000px;text-align:center">
-    <div style="font-family:'Baloo 2',sans-serif;font-weight:700;font-size:13px;letter-spacing:1.5px;color:#b4432d">DATE</div>
-    <div style="display:inline-block;margin-top:5px;padding-bottom:4px;border-bottom:2px dotted #b4432d;font-family:'Nunito',sans-serif;font-weight:800;font-size:14px;color:#2b3a55;min-width:180px">${esc(dateStr)}</div>
-   </div>
-  </div>
- </div>`;
- return wrap;
-}
-$("#downloadCert").onclick=async()=>{
- const d=window._lastCertData;if(!d)return;
- if(!window.jspdf||!window.html2canvas){$("#trophySubtitle").textContent="Certificate tool needs an internet connection. Please try again when online.";return}
- const btn=$("#downloadCert");btn.disabled=true;const origLabel=btn.textContent;btn.textContent="Preparing certificate...";
- try{
-  const node=buildCertificateNode(d);
-  document.body.appendChild(node);
-  const bgImg=node.querySelector("img");
-  if(bgImg&&!bgImg.complete){await new Promise(r=>{bgImg.onload=r;bgImg.onerror=r})}
-  if(document.fonts&&document.fonts.ready)await document.fonts.ready;
-  await new Promise(r=>setTimeout(r,80));
-  const canvas=await html2canvas(node.firstElementChild,{scale:2,backgroundColor:"#ffffff",useCORS:true});
-  document.body.removeChild(node);
-  const img=canvas.toDataURL("image/png");
-  const {jsPDF}=window.jspdf;
-  const doc=new jsPDF({orientation:"landscape",unit:"pt",format:"a4"});
-  const W=doc.internal.pageSize.getWidth(),H=doc.internal.pageSize.getHeight();
-  doc.addImage(img,"PNG",0,0,W,H);
-  doc.save(`MathBuddy_Certificate_${d.name.replace(/\s+/g,"_")}_${Date.now()}.pdf`);
- }catch(e){
-  console.log("[MathBuddy] Certificate generation failed:",e.message);
-  $("#trophySubtitle").textContent="Couldn't generate the certificate. Please try again.";
- }finally{
-  btn.disabled=false;btn.textContent=origLabel;
- }
-};
-
-(function initReturningLearner(){
- if(restoreLearner()&&learner){
-  $("#name").value=learner.name||"";
-  if(learner.grade){state.grade=learner.grade;$("#grade").value=learner.grade}
-  $("#reg").textContent=`✅ Welcome back, ${learner.name} — ID: ${learner.id}`;
-  loadLearnerProfile();
- }
-})();
-curriculum().then(newQ);render();loadDash();loadMap();teacherDashboard();openQueueDB().then(renderQueue);syncQueue();
-</script></body></html>
+app.post("/api/question",(req,res)=>{let b=req.body||{},g=Math.max(1,Math.min(10,+b.grade||1)),op=b.operation||"addition",s=b.skillState||{},p=PATTERNS(g),maxLvl=p.length,idx=Math.max(0,Math.min(p.length-1,(s.level||1)-1)),pat=p[idx];
+ const itemNum=+b.itemNumber||1;
+ const isWP=(itemNum===5||itemNum===10||itemNum===15);
+ let q=isWP?makeWordProblem(op,pat):make(op,pat);
+ q.competency=b.competency||`${op}_${pat}`;q.competencyLabel=LABEL[q.competency]||LABEL[op]||q.competency;q.difficulty=s.level||1;q.maxLevel=maxLvl;q.itemNumber=itemNum;res.json(q)});
+app.post("/api/attempt",(req,res)=>{let b=req.body||{},clientId=b.clientId||null,s=update(b.skillState||{},!!b.correct);
+ if(clientId){db.get("SELECT client_id FROM sync_receipts WHERE client_id=?",[clientId],(x,hit)=>{if(hit)return res.json({skillState:s,duplicate:true});
+  db.run("INSERT INTO sync_receipts(client_id,received_at) VALUES(?,?)",[clientId,now()],()=>saveAttempt())});}else saveAttempt();
+ function saveAttempt(){let a=[b.learnerId,b.competency,b.question,String(b.expected),String(b.answer),b.correct?1:0,b.difficulty||1,s.mastery,now()];
+ db.run("INSERT INTO attempts(learner_id,competency,question,expected,answer,correct,difficulty,mastery,created_at) VALUES(?,?,?,?,?,?,?,?,?)",a,e=>{if(e)return res.status(500).json({error:e.message});sheetsSaveAttempt({learnerId:b.learnerId,learnerName:b.learnerName||"",competency:b.competency,question:b.question,expected:String(b.expected),answer:String(b.answer),correct:!!b.correct,difficulty:b.difficulty||1,mastery:s.mastery,created_at:now()});res.json({skillState:s,duplicate:false})})}
+});
+app.post("/api/intervention",(req,res)=>{let b=req.body||{};db.run("INSERT INTO interventions(learner_id,competency,message,misconception,created_at) VALUES(?,?,?,?,?)",[b.learnerId,b.competency,b.message||"",b.misconception||"",now()],e=>e?res.status(500).json({error:e.message}):res.json({ok:true}))});
+app.get("/api/dashboard",(req,res)=>{db.get("SELECT COUNT(*) learners FROM learners",(e,l)=>db.get("SELECT COUNT(*) attempts,SUM(correct) correct,AVG(mastery) mastery FROM attempts",(e2,a)=>db.all("SELECT competency,AVG(mastery) mastery,COUNT(*) attempts FROM attempts GROUP BY competency ORDER BY mastery ASC LIMIT 8",(e3,p)=>res.json({learners:l?.learners||0,attempts:a?.attempts||0,accuracy:a?.attempts?((a.correct||0)/a.attempts):0,averageMastery:a?.mastery||0,prioritySkills:p||[]}))))});
+app.listen(PORT,()=>console.log(`MathBuddy V11 running on ${PORT}`));
