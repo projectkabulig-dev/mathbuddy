@@ -160,23 +160,36 @@ app.post("/api/conversation",async(req,res)=>{
  function smartFallback(){
   const msg=(b.message||"").toLowerCase().trim();
   const q=b.question||"",exp=b.expected||"";
-  // If the learner wrote an equation ending in "= <number>" (e.g. "5 + 3 = 8"), treat the
-  // number after "=" as their STATED ANSWER to the current problem and compare it to the
-  // real expected answer — instead of re-solving the expression from scratch, which would
-  // ignore whatever they actually wrote after "=" and never congratulate a correct answer.
-  if(msg.includes("=") && exp!==""){
-   const statedRaw=msg.split("=").pop().trim();
-   const statedMatch=statedRaw.match(/-?\d+(\.\d+)?/);
-   if(statedMatch){
-    const stated=statedMatch[0];
-    if(String(stated)===String(exp).trim()){
-     return {reply:`Yes! ${stated} is correct! Great job! Try the next problem.`,emotion:"celebrate",speech:`Yes, ${stated} is correct! Great job!`,hint:"",nextQuestion:"Try the next problem!"}
-    }else{
-     return {reply:`Not quite — the answer to ${q} is ${exp}. Let's try the next one!`,emotion:"encourage",speech:`The answer is ${exp}. Don't worry, let's try the next one!`,hint:`The answer is ${exp}.`,nextQuestion:"Try again!"}
-    }
-   }
+  
+  // FIRST: Check if asking for explanation/steps/teaching — prioritize over computing
+  const wantsSteps=/step|how do|how to|how will|how can|teach|explain|show me|why|process|method|way to/i.test(msg);
+  
+  // Extract any two numbers from the message for teaching examples
+  const nums=msg.match(/\d+/g);
+  const a=nums?+nums[0]:0,c=nums&&nums[1]?+nums[1]:0;
+  
+  if(wantsSteps&&msg.match(/add|plus|sum|total|combin/i)&&a&&c){
+   return {reply:`Great question! Here's how to add ${a} + ${c} step by step:\n1. Start with the bigger number: ${Math.max(a,c)}\n2. Count up ${Math.min(a,c)} more: ${Array.from({length:Math.min(a,c)},(_,i)=>Math.max(a,c)+i+1).join(", ")}\n3. You land on ${a+c}!\nSo ${a} + ${c} = ${a+c}`,emotion:"encourage",speech:`To add ${a} plus ${c}, start with ${Math.max(a,c)} and count up ${Math.min(a,c)} more. You get ${a+c}!`,hint:`Start with ${Math.max(a,c)} and count up.`,nextQuestion:"Try it yourself!"}
   }
-  // Try to detect and compute math expressions in the message
+  if(wantsSteps&&msg.match(/subtract|minus|take away|less/i)&&a&&c){
+   const big=Math.max(a,c),small=Math.min(a,c);
+   return {reply:`Here's how to subtract ${big} - ${small} step by step:\n1. Start with ${big}\n2. Count down ${small}: ${Array.from({length:small},(_,i)=>big-i-1).join(", ")}\n3. You land on ${big-small}!\nSo ${big} - ${small} = ${big-small}`,emotion:"encourage",speech:`To subtract, start with ${big} and count down ${small}. You get ${big-small}!`,hint:`Start with ${big} and count down.`,nextQuestion:"Try it!"}
+  }
+  if(wantsSteps&&msg.match(/multipl|times|groups/i)&&a&&c){
+   const groups=Math.min(a,c),each=Math.max(a,c);
+   return {reply:`Here's how to multiply ${a} × ${c} step by step:\n1. Think of it as ${groups} groups of ${each}\n2. Add them: ${Array(groups).fill(each).join(" + ")} = ${a*c}\nSo ${a} × ${c} = ${a*c}`,emotion:"encourage",speech:`${a} times ${c} means ${groups} groups of ${each}. Add them together to get ${a*c}!`,hint:"Think of it as groups.",nextQuestion:"Try it!"}
+  }
+  if(wantsSteps&&msg.match(/divid|share|split/i)&&a&&c){
+   const ans=c!==0?a/c:0;const isWhole=Number.isInteger(ans);
+   return {reply:`Here's how to divide ${a} ÷ ${c} step by step:\n1. Think: how many groups of ${c} fit into ${a}?\n2. Count: ${Array.from({length:Math.floor(ans)},(_,i)=>c*(i+1)).join(", ")}\n3. ${c} fits into ${a} exactly ${isWhole?ans:ans.toFixed(1)} times!\nSo ${a} ÷ ${c} = ${isWhole?ans:ans.toFixed(1)}`,emotion:"encourage",speech:`Divide ${a} by ${c}. How many groups of ${c} fit into ${a}? The answer is ${isWhole?ans:ans.toFixed(1)}!`,hint:`How many groups of ${c} fit into ${a}?`,nextQuestion:"Try it!"}
+  }
+  // Generic "how/why/explain" without specific numbers
+  if(wantsSteps&&!a){
+   const tips=["Break the problem into smaller parts. Start with what you know!","Use your fingers or draw circles to count. One step at a time!","Think about real objects — like sharing candies with friends!","Start with the bigger number, then count up or down from there."];
+   return {reply:tips[Math.floor(Math.random()*tips.length)],emotion:"encourage",speech:tips[Math.floor(Math.random()*tips.length)],hint:"Try the problem step by step.",nextQuestion:""}
+  }
+
+  // THEN: Direct math computation (only if NOT asking for steps)
   const mathMatch=msg.match(/(?:what(?:'s| is)\s+)?(\d+)\s*([+\-×x*÷/])\s*(\d+)/);
   if(mathMatch){
    const a=+mathMatch[1],op=mathMatch[2],c=+mathMatch[3];
@@ -191,7 +204,24 @@ app.post("/api/conversation",async(req,res)=>{
    }
   }
   // Detect spelled-out math: "12 divided by 2", "5 plus 3", "8 minus 2", "4 times 3"
-  const spelledMatch=msg.match(/(\d+)\s*(plus|added to|and|minus|subtract|take away|times|multiplied by|divided by|shared among|split by|over)\s*(\d+)/i);
+  // Check for "product" first (multiplication)
+  const productMatch=msg.match(/product\s+(?:of\s+)?(\d+)\s+(?:and|by|times)\s+(\d+)/i);
+  if(productMatch){const pa=+productMatch[1],pc=+productMatch[2];
+   return {reply:`The product of ${pa} and ${pc} is ${pa*pc}! That means ${pa} × ${pc} = ${pa*pc}.`,emotion:"happy",speech:`The product of ${pa} and ${pc} is ${pa*pc}.`,hint:"",nextQuestion:"Try another!"}
+  }
+  const sumMatch=msg.match(/sum\s+(?:of\s+)?(\d+)\s+(?:and|plus)\s+(\d+)/i);
+  if(sumMatch){const sa=+sumMatch[1],sc=+sumMatch[2];
+   return {reply:`The sum of ${sa} and ${sc} is ${sa+sc}! That means ${sa} + ${sc} = ${sa+sc}.`,emotion:"happy",speech:`The sum of ${sa} and ${sc} is ${sa+sc}.`,hint:"",nextQuestion:"Try another!"}
+  }
+  const diffMatch=msg.match(/difference\s+(?:of|between)\s+(\d+)\s+(?:and|minus)\s+(\d+)/i);
+  if(diffMatch){const da=+diffMatch[1],dc=+diffMatch[2];const big=Math.max(da,dc),small=Math.min(da,dc);
+   return {reply:`The difference of ${da} and ${dc} is ${big-small}! That means ${big} - ${small} = ${big-small}.`,emotion:"happy",speech:`The difference is ${big-small}.`,hint:"",nextQuestion:"Try another!"}
+  }
+  const quotMatch=msg.match(/quotient\s+(?:of\s+)?(\d+)\s+(?:and|divided by|by)\s+(\d+)/i);
+  if(quotMatch){const qa=+quotMatch[1],qc=+quotMatch[2];const ans=qc!==0?qa/qc:0;const isW=Number.isInteger(ans);
+   return {reply:`The quotient of ${qa} and ${qc} is ${isW?ans:ans.toFixed(2)}! That means ${qa} ÷ ${qc} = ${isW?ans:ans.toFixed(2)}.`,emotion:"happy",speech:`The quotient is ${isW?ans:ans.toFixed(2)}.`,hint:"",nextQuestion:"Try another!"}
+  }
+  const spelledMatch=msg.match(/(\d+)\s*(plus|added to|minus|subtract|take away|times|multiplied by|divided by|shared among|split by|over)\s*(\d+)/i);
   if(spelledMatch){
    const a=+spelledMatch[1],opWord=spelledMatch[2].toLowerCase(),c=+spelledMatch[3];
    let ans,opName;
@@ -216,18 +246,33 @@ app.post("/api/conversation",async(req,res)=>{
   if(wpDiv){const a=+wpDiv[1],b=+wpDiv[2];const ans=b!==0?a/b:0;const isWhole=Number.isInteger(ans);
    return {reply:`If you share ${a} equally among ${b}, each gets ${isWhole?ans:ans.toFixed(1)}!`,emotion:"happy",speech:`${a} divided by ${b} equals ${isWhole?ans:ans.toFixed(1)}.`,hint:"",nextQuestion:""}
   }
-  // Detect "how to" teaching requests
-  if(msg.includes("how")&&msg.includes("add")||msg.includes("teach")&&msg.includes("add")||msg.includes("addition")){
-   return {reply:"To add numbers, you combine them together. For example, 3 + 2: start with 3, then count up 2 more — four, five. The answer is 5! Try it with the problem on the right.",emotion:"encourage",speech:"To add numbers, combine them together. Start with the bigger number and count up!",hint:"Start with the bigger number and count up.",nextQuestion:"Try the problem on the right!"}
+  // Detect teaching requests - broader triggers
+  const aboutAdd=/add|plus|sum|addition|adding/i.test(msg);
+  const aboutSub=/subtract|minus|difference|subtraction|subtracting|take away/i.test(msg);
+  const aboutMul=/multipl|times|product|multiplication|groups of/i.test(msg);
+  const aboutDiv=/divid|share|split|quotient|division|dividing/i.test(msg);
+  const wantsTeach=/how|what is|what are|process|explain|teach|show|tell me|example|steps|way to|meaning|means/i.test(msg);
+  
+  if(wantsTeach&&aboutAdd){
+   return {reply:"Addition means combining numbers together. For example, 3 + 5: start with the bigger number (5), then count up 3 more — six, seven, eight. So 3 + 5 = 8! Another example: if you have 4 candies and your friend gives you 6 more, you now have 10 candies!",emotion:"encourage",speech:"Addition means combining numbers. Start with the bigger number and count up!",hint:"Start with the bigger number and count up.",nextQuestion:"Try the problem on the right!"}
   }
-  if(msg.includes("how")&&msg.includes("subtract")||msg.includes("teach")&&msg.includes("subtract")||msg.includes("subtraction")){
-   return {reply:"To subtract, you take away from the bigger number. For example, 8 - 3: start with 8, then count down 3 — seven, six, five. The answer is 5!",emotion:"encourage",speech:"To subtract, start with the bigger number and count down.",hint:"Start with the bigger number and count down.",nextQuestion:"Try the problem!"}
+  if(wantsTeach&&aboutSub){
+   return {reply:"Subtraction means taking away. For example, 9 - 4: start with 9, then count down 4 — eight, seven, six, five. So 9 - 4 = 5! Think of it like this: if you have 9 mangoes and eat 4, you have 5 left.",emotion:"encourage",speech:"Subtraction means taking away. Start with the bigger number and count down!",hint:"Start with the bigger number and count down.",nextQuestion:"Try the problem!"}
   }
-  if(msg.includes("how")&&msg.includes("multipl")||msg.includes("teach")&&msg.includes("multipl")||msg.includes("multiplication")){
-   return {reply:"Multiplication is adding the same number many times. For example, 3 × 4 means 3 groups of 4: 4 + 4 + 4 = 12!",emotion:"encourage",speech:"Multiplication means adding the same number many times. 3 times 4 means three groups of four.",hint:"Think of it as groups.",nextQuestion:"Try the problem!"}
+  if(wantsTeach&&aboutMul){
+   return {reply:"Multiplication means adding the same number many times. For example, 3 × 4 means 3 groups of 4: 4 + 4 + 4 = 12! Think of it like this: if you have 3 bags with 4 candies each, you have 12 candies total.",emotion:"encourage",speech:"Multiplication means adding the same number many times. 3 times 4 means three groups of four, which is twelve!",hint:"Think of it as groups.",nextQuestion:"Try the problem!"}
   }
-  if(msg.includes("how")&&msg.includes("divid")||msg.includes("teach")&&msg.includes("divid")||msg.includes("division")){
-   return {reply:"Division means sharing equally. For example, 12 ÷ 3: if you share 12 apples among 3 friends, each friend gets 4 apples!",emotion:"encourage",speech:"Division means sharing equally. 12 divided by 3 means sharing 12 things among 3 groups.",hint:"Think about sharing equally.",nextQuestion:"Try the problem!"}
+  if(wantsTeach&&aboutDiv){
+   return {reply:"Division means sharing equally. For example, 12 ÷ 3: if you share 12 candies among 3 friends, each friend gets 4 candies! You can also think: how many groups of 3 fit into 12? Count: 3, 6, 9, 12 — that's 4 groups. So 12 ÷ 3 = 4!",emotion:"encourage",speech:"Division means sharing equally. 12 divided by 3 means sharing 12 things among 3 groups. Each group gets 4!",hint:"Think about sharing equally.",nextQuestion:"Try the problem!"}
+  }
+  // "give me example" without specific operation — use current competency
+  if(/example|sample|practice/i.test(msg)&&!aboutAdd&&!aboutSub&&!aboutMul&&!aboutDiv){
+   const op=b.competency||"addition";
+   if(op.includes("add"))return {reply:"Here's an example: 7 + 5. Start with 7, count up 5: eight, nine, ten, eleven, twelve. So 7 + 5 = 12!",emotion:"encourage",speech:"Example: 7 plus 5 equals 12!",hint:"",nextQuestion:""}
+   if(op.includes("sub"))return {reply:"Here's an example: 15 - 6. Start with 15, count down 6: fourteen, thirteen, twelve, eleven, ten, nine. So 15 - 6 = 9!",emotion:"encourage",speech:"Example: 15 minus 6 equals 9!",hint:"",nextQuestion:""}
+   if(op.includes("mul"))return {reply:"Here's an example: 4 × 5. That's 4 groups of 5: 5 + 5 + 5 + 5 = 20. So 4 × 5 = 20!",emotion:"encourage",speech:"Example: 4 times 5 equals 20!",hint:"",nextQuestion:""}
+   if(op.includes("div"))return {reply:"Here's an example: 20 ÷ 4. Share 20 among 4 groups: each gets 5. So 20 ÷ 4 = 5!",emotion:"encourage",speech:"Example: 20 divided by 4 equals 5!",hint:"",nextQuestion:""}
+   return {reply:"Here's an example: 8 + 3 = 11. Start with 8, count up 3: nine, ten, eleven!",emotion:"encourage",speech:"Example: 8 plus 3 equals 11!",hint:"",nextQuestion:""}
   }
   // Only check number-as-answer if message is SHORT and looks like a simple answer (not a question)
   const isQuestion=msg.includes("?")||msg.includes("what")||msg.includes("how")||msg.includes("if i")||msg.includes("if you")||msg.includes("many")||msg.length>30;
@@ -589,7 +634,7 @@ app.post("/api/voice/session",auth,requireRole("teacher","admin"),(req,res)=>{
   note:"Audio is processed client-side in this foundation; persistent audio storage is disabled."
  });
 });
-app.get("/api/health",(req,res)=>res.json({status:"ok",version:"11.0",database:"sqlite",time:now(),aiConfigured:!!AI_KEY,aiModel:AI_MODEL}));
+app.get("/api/health",(req,res)=>res.json({status:"ok",version:"11.0",database:"sqlite",time:now()}));
 app.get("/api/curriculum-map",(req,res)=>{let g=Math.max(1,Math.min(10,+req.query.grade||1));res.json(CURRICULUM[`grade_${g}`]||{})});
 app.get("/api/curriculum",(req,res)=>{let g=Math.max(1,Math.min(10,+req.query.grade||1));res.json({grade:g,patterns:PATTERNS(g),competencies:COMP[g],labels:LABEL})});
 app.post("/api/learners",(req,res)=>{let b=req.body||{},learner={id:id(),name:b.name||"Learner",grade:+b.grade||1,section:b.section||"",school:b.school||"",created_at:now()};db.run("INSERT INTO learners VALUES(?,?,?,?,?,?)",Object.values(learner),e=>{if(e)return res.status(500).json({error:e.message});sheetsAddLearner(learner);res.json(learner)})});
