@@ -160,6 +160,22 @@ app.post("/api/conversation",async(req,res)=>{
  function smartFallback(){
   const msg=(b.message||"").toLowerCase().trim();
   const q=b.question||"",exp=b.expected||"";
+  // If the learner wrote an equation ending in "= <number>" (e.g. "5 + 3 = 8"), treat the
+  // number after "=" as their STATED ANSWER to the current problem and compare it to the
+  // real expected answer — instead of re-solving the expression from scratch, which would
+  // ignore whatever they actually wrote after "=" and never congratulate a correct answer.
+  if(msg.includes("=") && exp!==""){
+   const statedRaw=msg.split("=").pop().trim();
+   const statedMatch=statedRaw.match(/-?\d+(\.\d+)?/);
+   if(statedMatch){
+    const stated=statedMatch[0];
+    if(String(stated)===String(exp).trim()){
+     return {reply:`Yes! ${stated} is correct! Great job! Try the next problem.`,emotion:"celebrate",speech:`Yes, ${stated} is correct! Great job!`,hint:"",nextQuestion:"Try the next problem!"}
+    }else{
+     return {reply:`Not quite — the answer to ${q} is ${exp}. Let's try the next one!`,emotion:"encourage",speech:`The answer is ${exp}. Don't worry, let's try the next one!`,hint:`The answer is ${exp}.`,nextQuestion:"Try again!"}
+    }
+   }
+  }
   // Try to detect and compute math expressions in the message
   const mathMatch=msg.match(/(?:what(?:'s| is)\s+)?(\d+)\s*([+\-×x*÷/])\s*(\d+)/);
   if(mathMatch){
@@ -573,7 +589,7 @@ app.post("/api/voice/session",auth,requireRole("teacher","admin"),(req,res)=>{
   note:"Audio is processed client-side in this foundation; persistent audio storage is disabled."
  });
 });
-app.get("/api/health",(req,res)=>res.json({status:"ok",version:"11.0",database:"sqlite",time:now()}));
+app.get("/api/health",(req,res)=>res.json({status:"ok",version:"11.0",database:"sqlite",time:now(),aiConfigured:!!AI_KEY,aiModel:AI_MODEL}));
 app.get("/api/curriculum-map",(req,res)=>{let g=Math.max(1,Math.min(10,+req.query.grade||1));res.json(CURRICULUM[`grade_${g}`]||{})});
 app.get("/api/curriculum",(req,res)=>{let g=Math.max(1,Math.min(10,+req.query.grade||1));res.json({grade:g,patterns:PATTERNS(g),competencies:COMP[g],labels:LABEL})});
 app.post("/api/learners",(req,res)=>{let b=req.body||{},learner={id:id(),name:b.name||"Learner",grade:+b.grade||1,section:b.section||"",school:b.school||"",created_at:now()};db.run("INSERT INTO learners VALUES(?,?,?,?,?,?)",Object.values(learner),e=>{if(e)return res.status(500).json({error:e.message});sheetsAddLearner(learner);res.json(learner)})});
