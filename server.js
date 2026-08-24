@@ -174,6 +174,32 @@ app.post("/api/conversation",async(req,res)=>{
     return {reply:`${a} ${opName} ${c} equals ${isWhole?ans:ans.toFixed(2)}!`,emotion:"happy",speech:`${a} ${opName} ${c} equals ${isWhole?ans:ans.toFixed(2)}.`,hint:"",nextQuestion:"Try another problem!"}
    }
   }
+  // Detect spelled-out math: "12 divided by 2", "5 plus 3", "8 minus 2", "4 times 3"
+  const spelledMatch=msg.match(/(\d+)\s*(plus|added to|and|minus|subtract|take away|times|multiplied by|divided by|shared among|split by|over)\s*(\d+)/i);
+  if(spelledMatch){
+   const a=+spelledMatch[1],opWord=spelledMatch[2].toLowerCase(),c=+spelledMatch[3];
+   let ans,opName;
+   if(/plus|added|and/.test(opWord)){ans=a+c;opName="plus"}
+   else if(/minus|subtract|take/.test(opWord)){ans=a-c;opName="minus"}
+   else if(/times|multipli/.test(opWord)){ans=a*c;opName="times"}
+   else if(/divid|shared|split|over/.test(opWord)){ans=c!==0?a/c:0;opName="divided by"}
+   if(ans!==undefined){
+    const isWhole=Number.isInteger(ans);
+    return {reply:`${a} ${opName} ${c} equals ${isWhole?ans:ans.toFixed(2)}!`,emotion:"happy",speech:`${a} ${opName} ${c} equals ${isWhole?ans:ans.toFixed(2)}.`,hint:"",nextQuestion:"Try another problem!"}
+   }
+  }
+  // Detect word problems from the student: "if I have X and give/get Y"
+  const wpAdd=msg.match(/(?:have|has|got)\s+(\d+).*?(?:gave|give|get|gets|more|added|another)\s+(\d+)/i);
+  if(wpAdd){const a=+wpAdd[1],b=+wpAdd[2];
+   if(msg.includes("gave away")||msg.includes("give away")||msg.includes("lost")||msg.includes("took")||msg.includes("ate")){
+    return {reply:`If you start with ${a} and take away ${b}, you have ${a-b} left!`,emotion:"happy",speech:`${a} minus ${b} equals ${a-b}.`,hint:"",nextQuestion:""}
+   }
+   return {reply:`If you have ${a} and get ${b} more, you have ${a+b} in total!`,emotion:"happy",speech:`${a} plus ${b} equals ${a+b}.`,hint:"",nextQuestion:""}
+  }
+  const wpDiv=msg.match(/(?:have|has)\s+(\d+).*?(?:share|split|divide|among|between)\s*(?:them\s*)?(?:to|among|between|into)?\s*(\d+)/i);
+  if(wpDiv){const a=+wpDiv[1],b=+wpDiv[2];const ans=b!==0?a/b:0;const isWhole=Number.isInteger(ans);
+   return {reply:`If you share ${a} equally among ${b}, each gets ${isWhole?ans:ans.toFixed(1)}!`,emotion:"happy",speech:`${a} divided by ${b} equals ${isWhole?ans:ans.toFixed(1)}.`,hint:"",nextQuestion:""}
+  }
   // Detect "how to" teaching requests
   if(msg.includes("how")&&msg.includes("add")||msg.includes("teach")&&msg.includes("add")||msg.includes("addition")){
    return {reply:"To add numbers, you combine them together. For example, 3 + 2: start with 3, then count up 2 more — four, five. The answer is 5! Try it with the problem on the right.",emotion:"encourage",speech:"To add numbers, combine them together. Start with the bigger number and count up!",hint:"Start with the bigger number and count up.",nextQuestion:"Try the problem on the right!"}
@@ -187,14 +213,17 @@ app.post("/api/conversation",async(req,res)=>{
   if(msg.includes("how")&&msg.includes("divid")||msg.includes("teach")&&msg.includes("divid")||msg.includes("division")){
    return {reply:"Division means sharing equally. For example, 12 ÷ 3: if you share 12 apples among 3 friends, each friend gets 4 apples!",emotion:"encourage",speech:"Division means sharing equally. 12 divided by 3 means sharing 12 things among 3 groups.",hint:"Think about sharing equally.",nextQuestion:"Try the problem!"}
   }
-  // Check if learner gave a number — might be answering the current question
-  const numMatch=msg.match(/\b(\d+)\b/);
-  if(numMatch&&exp){
-   const gave=+numMatch[1],expected=+exp;
-   if(gave===expected){
-    return {reply:`Yes! ${gave} is correct! Great job! Try the next problem.`,emotion:"celebrate",speech:`Yes, ${gave} is correct! Great job!`,hint:"",nextQuestion:"Try the next problem!"}
-   } else {
-    return {reply:`Not quite — the answer to ${q} is ${exp}. Let's try the next one!`,emotion:"encourage",speech:`The answer is ${exp}. Don't worry, let's try the next one!`,hint:`The answer is ${exp}.`,nextQuestion:"Try again!"}
+  // Only check number-as-answer if message is SHORT and looks like a simple answer (not a question)
+  const isQuestion=msg.includes("?")||msg.includes("what")||msg.includes("how")||msg.includes("if i")||msg.includes("if you")||msg.includes("many")||msg.length>30;
+  if(!isQuestion){
+   const numMatch=msg.match(/^\s*(\d+)\s*$/);
+   if(numMatch&&exp){
+    const gave=+numMatch[1],expected=+exp;
+    if(gave===expected){
+     return {reply:`Yes! ${gave} is correct! Great job! Try the next problem.`,emotion:"celebrate",speech:`Yes, ${gave} is correct! Great job!`,hint:"",nextQuestion:"Try the next problem!"}
+    } else {
+     return {reply:`Not quite — the answer to ${q} is ${exp}. Let's try the next one!`,emotion:"encourage",speech:`The answer is ${exp}. Don't worry, let's try the next one!`,hint:`The answer is ${exp}.`,nextQuestion:"Try again!"}
+    }
    }
   }
   // Generic encouraging fallback
