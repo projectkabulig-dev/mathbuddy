@@ -517,7 +517,6 @@ $("#chatSend").onclick=sendChat;
 $("#chatInput").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();sendChat()}});
 let chatMicActive=null;
 $("#chatMic").onclick=()=>{
- // Toggle: if already listening, stop
  if(chatMicActive){try{chatMicActive.stop()}catch(e){}chatMicActive=null;return}
  const SR2=window.SpeechRecognition||window.webkitSpeechRecognition;
  if(!SR2){$("#chatVoiceStatus").textContent="Speech recognition not supported.";return}
@@ -528,12 +527,13 @@ $("#chatMic").onclick=()=>{
  rec.onresult=e=>{
   const t=e.results[e.results.length-1][0].transcript;
   $("#chatInput").value=t;
-  if(e.results[e.results.length-1].isFinal){finalText=t;gotResult=true;$("#chatVoiceStatus").textContent=`Heard: "${t}"`}
+  if(e.results[e.results.length-1].isFinal){finalText=t;gotResult=true;$("#chatVoiceStatus").textContent=`Heard: "${t}" — press Send to submit`}
   else{$("#chatVoiceStatus").textContent=`🎤 Hearing: "${t}"...`}
  };
  rec.onerror=()=>{$("#chatVoiceStatus").textContent="Couldn't hear that. Tap 🎤 again.";$("#chatMic").style.background="";$("#chatMic").textContent="🎤"};
  rec.onend=()=>{chatMicActive=null;$("#chatMic").style.background="";$("#chatMic").textContent="🎤";
-  if(gotResult&&finalText.trim()){$("#chatInput").value=finalText.trim();sendChat()}};
+  if(gotResult){$("#chatVoiceStatus").textContent=`Heard: "${finalText}" — press Send to submit`}
+  else{$("#chatVoiceStatus").textContent="No speech detected. Tap 🎤 again."}};
  try{rec.start()}catch(e){chatMicActive=null;$("#chatVoiceStatus").textContent="Could not start mic."}
 };
 
