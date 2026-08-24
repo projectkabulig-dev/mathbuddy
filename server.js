@@ -204,7 +204,24 @@ app.post("/api/conversation",async(req,res)=>{
    }
   }
   // Detect spelled-out math: "12 divided by 2", "5 plus 3", "8 minus 2", "4 times 3"
-  const spelledMatch=msg.match(/(\d+)\s*(plus|added to|and|minus|subtract|take away|times|multiplied by|divided by|shared among|split by|over)\s*(\d+)/i);
+  // Check for "product" first (multiplication)
+  const productMatch=msg.match(/product\s+(?:of\s+)?(\d+)\s+(?:and|by|times)\s+(\d+)/i);
+  if(productMatch){const pa=+productMatch[1],pc=+productMatch[2];
+   return {reply:`The product of ${pa} and ${pc} is ${pa*pc}! That means ${pa} × ${pc} = ${pa*pc}.`,emotion:"happy",speech:`The product of ${pa} and ${pc} is ${pa*pc}.`,hint:"",nextQuestion:"Try another!"}
+  }
+  const sumMatch=msg.match(/sum\s+(?:of\s+)?(\d+)\s+(?:and|plus)\s+(\d+)/i);
+  if(sumMatch){const sa=+sumMatch[1],sc=+sumMatch[2];
+   return {reply:`The sum of ${sa} and ${sc} is ${sa+sc}! That means ${sa} + ${sc} = ${sa+sc}.`,emotion:"happy",speech:`The sum of ${sa} and ${sc} is ${sa+sc}.`,hint:"",nextQuestion:"Try another!"}
+  }
+  const diffMatch=msg.match(/difference\s+(?:of|between)\s+(\d+)\s+(?:and|minus)\s+(\d+)/i);
+  if(diffMatch){const da=+diffMatch[1],dc=+diffMatch[2];const big=Math.max(da,dc),small=Math.min(da,dc);
+   return {reply:`The difference of ${da} and ${dc} is ${big-small}! That means ${big} - ${small} = ${big-small}.`,emotion:"happy",speech:`The difference is ${big-small}.`,hint:"",nextQuestion:"Try another!"}
+  }
+  const quotMatch=msg.match(/quotient\s+(?:of\s+)?(\d+)\s+(?:and|divided by|by)\s+(\d+)/i);
+  if(quotMatch){const qa=+quotMatch[1],qc=+quotMatch[2];const ans=qc!==0?qa/qc:0;const isW=Number.isInteger(ans);
+   return {reply:`The quotient of ${qa} and ${qc} is ${isW?ans:ans.toFixed(2)}! That means ${qa} ÷ ${qc} = ${isW?ans:ans.toFixed(2)}.`,emotion:"happy",speech:`The quotient is ${isW?ans:ans.toFixed(2)}.`,hint:"",nextQuestion:"Try another!"}
+  }
+  const spelledMatch=msg.match(/(\d+)\s*(plus|added to|minus|subtract|take away|times|multiplied by|divided by|shared among|split by|over)\s*(\d+)/i);
   if(spelledMatch){
    const a=+spelledMatch[1],opWord=spelledMatch[2].toLowerCase(),c=+spelledMatch[3];
    let ans,opName;
