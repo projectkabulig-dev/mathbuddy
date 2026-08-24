@@ -380,6 +380,8 @@ function extractNumber(t){
  const n=wordsToNumber(t);
  return n!==null?String(n):t;
 }
+const NOISE_MSG="🔇 Medyo maingay yata sa paligid — hindi klaro narinig. Subukan ulit sa mas tahimik na lugar, o i-type na lang ang sagot.";
+const LOW_CONF=0.5;
 let activeMic=null;
 function micToAnswer(inputSel,statusSel,autoSubmit,btnSel,onSubmit){
  btnSel=btnSel||"#micAns";
@@ -389,19 +391,25 @@ function micToAnswer(inputSel,statusSel,autoSubmit,btnSel,onSubmit){
  if(!SR2){if(statusSel)$(statusSel).textContent="Speech recognition is not supported. Type your answer instead.";return}
  const rec=new SR2();rec.lang=$("#voiceLang")?.value||"en-PH";rec.interimResults=true;rec.continuous=false;rec.maxAlternatives=3;
  activeMic=rec;
- let gotResult=false;
+ let gotResult=false,isNoisy=false;
  rec.onstart=()=>{if(statusSel){$(statusSel).textContent="🎤 Listening... tap 🎤 again to stop";$(statusSel).style.color="#28bd60"}
   $(btnSel).style.background="#28bd60";$(btnSel).textContent="⏹ Stop"};
  rec.onresult=e=>{
-  const t=e.results[e.results.length-1][0].transcript;
+  const res=e.results[e.results.length-1];
+  const t=res[0].transcript,conf=res[0].confidence;
   const val=extractNumber(t);$(inputSel).value=val;
-  if(e.results[e.results.length-1].isFinal){gotResult=true;
-   if(statusSel){$(statusSel).textContent=(val!==t?`Heard: "${t}" → ${val}`:`Heard: "${t}"`);$(statusSel).style.color="#687583"}}
-  else{if(statusSel)$(statusSel).textContent=`🎤 Hearing: "${t}"...`}
+  if(res.isFinal){
+   gotResult=true;
+   const isNumeric=/^-?\d+(\.\d+)?$/.test(val);
+   if(!isNumeric||(typeof conf==="number"&&conf>0&&conf<LOW_CONF)){
+    isNoisy=true;
+    if(statusSel){$(statusSel).textContent=NOISE_MSG;$(statusSel).style.color="#d9822b"}
+   }else if(statusSel){$(statusSel).textContent=(val!==t?`Heard: "${t}" → ${val}`:`Heard: "${t}"`);$(statusSel).style.color="#687583"}
+  }else if(statusSel)$(statusSel).textContent=`🎤 Hearing: "${t}"...`;
  };
  rec.onerror=e=>{if(statusSel){$(statusSel).textContent=e.error==="not-allowed"?"Mic blocked. Check browser settings.":"Couldn't hear. Tap 🎤 again.";$(statusSel).style.color="#687583"}};
  rec.onend=()=>{activeMic=null;$(btnSel).style.background="";$(btnSel).textContent="🎤 Speak Answer";
-  if(gotResult&&autoSubmit){setTimeout(()=>{if($(inputSel).value.trim())onSubmit&&onSubmit()},300)}
+  if(gotResult&&autoSubmit&&!isNoisy){setTimeout(()=>{if($(inputSel).value.trim())onSubmit&&onSubmit()},300)}
   else if(!gotResult&&statusSel&&$(statusSel).textContent.includes("Listening")){$(statusSel).textContent="No speech detected. Tap 🎤 and speak clearly.";$(statusSel).style.color="#687583"}};
  try{rec.start()}catch(e){activeMic=null;if(statusSel)$(statusSel).textContent="Could not start mic. Try again."}
 }
@@ -516,7 +524,7 @@ async function sendChat(){
 }
 $("#chatSend").onclick=sendChat;
 $("#chatInput").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();sendChat()}});
-let activeChatMic=null,chatMicStopRequested=false,chatMicFinalText="",chatMicGotResult=false;
+let activeChatMic=null,chatMicStopRequested=false,chatMicFinalText="",chatMicGotResult=false,chatMicNoisy=false;
 function startChatMicSession(){
  const SR2=window.SpeechRecognition||window.webkitSpeechRecognition;
  if(!SR2){$("#chatVoiceStatus").textContent="Speech recognition not supported.";return}
@@ -526,8 +534,12 @@ function startChatMicSession(){
  rec.onresult=e=>{
   let interim="";
   for(let i=e.resultIndex;i<e.results.length;i++){
-   if(e.results[i].isFinal){chatMicFinalText+=e.results[i][0].transcript+" ";chatMicGotResult=true}
-   else interim+=e.results[i][0].transcript;
+   const res=e.results[i];
+   if(res.isFinal){
+    chatMicFinalText+=res[0].transcript+" ";chatMicGotResult=true;
+    const conf=res[0].confidence;
+    if(typeof conf==="number"&&conf>0&&conf<LOW_CONF)chatMicNoisy=true;
+   }else interim+=res[0].transcript;
   }
   const t=(chatMicFinalText+interim).trim();
   $("#chatInput").value=t;
@@ -545,16 +557,17 @@ function startChatMicSession(){
   }
   $("#chatMic").style.background="";$("#chatMic").textContent="🎤";
   const t=$("#chatInput").value.trim();
-  if(chatMicGotResult&&t){$("#chatVoiceStatus").textContent=`Heard: "${t}"`;$("#chatVoiceStatus").style.color="#687583";sendChat()}
+  if(chatMicNoisy){$("#chatVoiceStatus").textContent=NOISE_MSG;$("#chatVoiceStatus").style.color="#d9822b"}
+  else if(chatMicGotResult&&t){$("#chatVoiceStatus").textContent=`Heard: "${t}"`;$("#chatVoiceStatus").style.color="#687583";sendChat()}
   else{$("#chatVoiceStatus").textContent="No speech detected. Tap 🎤 and speak clearly.";$("#chatVoiceStatus").style.color="#687583"}
-  chatMicFinalText="";chatMicGotResult=false;
+  chatMicFinalText="";chatMicGotResult=false;chatMicNoisy=false;
  };
  try{rec.start()}catch(e){activeChatMic=null;$("#chatVoiceStatus").textContent="Could not start mic. Try again."}
 }
 $("#chatMic").onclick=()=>{
  // Toggle: if already listening, mark as user-requested stop — this lets it finalize and send
  if(activeChatMic){chatMicStopRequested=true;try{activeChatMic.stop()}catch(e){}return}
- chatMicStopRequested=false;chatMicFinalText="";chatMicGotResult=false;
+ chatMicStopRequested=false;chatMicFinalText="";chatMicGotResult=false;chatMicNoisy=false;
  startChatMicSession();
 };
 
