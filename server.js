@@ -246,18 +246,33 @@ app.post("/api/conversation",async(req,res)=>{
   if(wpDiv){const a=+wpDiv[1],b=+wpDiv[2];const ans=b!==0?a/b:0;const isWhole=Number.isInteger(ans);
    return {reply:`If you share ${a} equally among ${b}, each gets ${isWhole?ans:ans.toFixed(1)}!`,emotion:"happy",speech:`${a} divided by ${b} equals ${isWhole?ans:ans.toFixed(1)}.`,hint:"",nextQuestion:""}
   }
-  // Detect "how to" teaching requests
-  if(msg.includes("how")&&msg.includes("add")||msg.includes("teach")&&msg.includes("add")||msg.includes("addition")){
-   return {reply:"To add numbers, you combine them together. For example, 3 + 2: start with 3, then count up 2 more — four, five. The answer is 5! Try it with the problem on the right.",emotion:"encourage",speech:"To add numbers, combine them together. Start with the bigger number and count up!",hint:"Start with the bigger number and count up.",nextQuestion:"Try the problem on the right!"}
+  // Detect teaching requests - broader triggers
+  const aboutAdd=/add|plus|sum|addition|adding/i.test(msg);
+  const aboutSub=/subtract|minus|difference|subtraction|subtracting|take away/i.test(msg);
+  const aboutMul=/multipl|times|product|multiplication|groups of/i.test(msg);
+  const aboutDiv=/divid|share|split|quotient|division|dividing/i.test(msg);
+  const wantsTeach=/how|what is|what are|process|explain|teach|show|tell me|example|steps|way to|meaning|means/i.test(msg);
+  
+  if(wantsTeach&&aboutAdd){
+   return {reply:"Addition means combining numbers together. For example, 3 + 5: start with the bigger number (5), then count up 3 more — six, seven, eight. So 3 + 5 = 8! Another example: if you have 4 candies and your friend gives you 6 more, you now have 10 candies!",emotion:"encourage",speech:"Addition means combining numbers. Start with the bigger number and count up!",hint:"Start with the bigger number and count up.",nextQuestion:"Try the problem on the right!"}
   }
-  if(msg.includes("how")&&msg.includes("subtract")||msg.includes("teach")&&msg.includes("subtract")||msg.includes("subtraction")){
-   return {reply:"To subtract, you take away from the bigger number. For example, 8 - 3: start with 8, then count down 3 — seven, six, five. The answer is 5!",emotion:"encourage",speech:"To subtract, start with the bigger number and count down.",hint:"Start with the bigger number and count down.",nextQuestion:"Try the problem!"}
+  if(wantsTeach&&aboutSub){
+   return {reply:"Subtraction means taking away. For example, 9 - 4: start with 9, then count down 4 — eight, seven, six, five. So 9 - 4 = 5! Think of it like this: if you have 9 mangoes and eat 4, you have 5 left.",emotion:"encourage",speech:"Subtraction means taking away. Start with the bigger number and count down!",hint:"Start with the bigger number and count down.",nextQuestion:"Try the problem!"}
   }
-  if(msg.includes("how")&&msg.includes("multipl")||msg.includes("teach")&&msg.includes("multipl")||msg.includes("multiplication")){
-   return {reply:"Multiplication is adding the same number many times. For example, 3 × 4 means 3 groups of 4: 4 + 4 + 4 = 12!",emotion:"encourage",speech:"Multiplication means adding the same number many times. 3 times 4 means three groups of four.",hint:"Think of it as groups.",nextQuestion:"Try the problem!"}
+  if(wantsTeach&&aboutMul){
+   return {reply:"Multiplication means adding the same number many times. For example, 3 × 4 means 3 groups of 4: 4 + 4 + 4 = 12! Think of it like this: if you have 3 bags with 4 candies each, you have 12 candies total.",emotion:"encourage",speech:"Multiplication means adding the same number many times. 3 times 4 means three groups of four, which is twelve!",hint:"Think of it as groups.",nextQuestion:"Try the problem!"}
   }
-  if(msg.includes("how")&&msg.includes("divid")||msg.includes("teach")&&msg.includes("divid")||msg.includes("division")){
-   return {reply:"Division means sharing equally. For example, 12 ÷ 3: if you share 12 apples among 3 friends, each friend gets 4 apples!",emotion:"encourage",speech:"Division means sharing equally. 12 divided by 3 means sharing 12 things among 3 groups.",hint:"Think about sharing equally.",nextQuestion:"Try the problem!"}
+  if(wantsTeach&&aboutDiv){
+   return {reply:"Division means sharing equally. For example, 12 ÷ 3: if you share 12 candies among 3 friends, each friend gets 4 candies! You can also think: how many groups of 3 fit into 12? Count: 3, 6, 9, 12 — that's 4 groups. So 12 ÷ 3 = 4!",emotion:"encourage",speech:"Division means sharing equally. 12 divided by 3 means sharing 12 things among 3 groups. Each group gets 4!",hint:"Think about sharing equally.",nextQuestion:"Try the problem!"}
+  }
+  // "give me example" without specific operation — use current competency
+  if(/example|sample|practice/i.test(msg)&&!aboutAdd&&!aboutSub&&!aboutMul&&!aboutDiv){
+   const op=b.competency||"addition";
+   if(op.includes("add"))return {reply:"Here's an example: 7 + 5. Start with 7, count up 5: eight, nine, ten, eleven, twelve. So 7 + 5 = 12!",emotion:"encourage",speech:"Example: 7 plus 5 equals 12!",hint:"",nextQuestion:""}
+   if(op.includes("sub"))return {reply:"Here's an example: 15 - 6. Start with 15, count down 6: fourteen, thirteen, twelve, eleven, ten, nine. So 15 - 6 = 9!",emotion:"encourage",speech:"Example: 15 minus 6 equals 9!",hint:"",nextQuestion:""}
+   if(op.includes("mul"))return {reply:"Here's an example: 4 × 5. That's 4 groups of 5: 5 + 5 + 5 + 5 = 20. So 4 × 5 = 20!",emotion:"encourage",speech:"Example: 4 times 5 equals 20!",hint:"",nextQuestion:""}
+   if(op.includes("div"))return {reply:"Here's an example: 20 ÷ 4. Share 20 among 4 groups: each gets 5. So 20 ÷ 4 = 5!",emotion:"encourage",speech:"Example: 20 divided by 4 equals 5!",hint:"",nextQuestion:""}
+   return {reply:"Here's an example: 8 + 3 = 11. Start with 8, count up 3: nine, ten, eleven!",emotion:"encourage",speech:"Example: 8 plus 3 equals 11!",hint:"",nextQuestion:""}
   }
   // Only check number-as-answer if message is SHORT and looks like a simple answer (not a question)
   const isQuestion=msg.includes("?")||msg.includes("what")||msg.includes("how")||msg.includes("if i")||msg.includes("if you")||msg.includes("many")||msg.length>30;
